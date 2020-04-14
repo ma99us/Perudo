@@ -4,7 +4,6 @@ import "/lib/angular-resource/angular-resource.js";
 import "/lib/angular-sanitize/angular-sanitize.js";
 
 import {HomeModule} from "/home/home-module.js";
-import {GameLobbyModule} from "/lobby/lobby-module.js";
 import {GameModule} from "/game/game-module.js";
 
 export const App = angular.module('App', [
@@ -12,7 +11,6 @@ export const App = angular.module('App', [
   'ngSanitize',
   'ngWebSocket',
   HomeModule,
-  GameLobbyModule,
   GameModule
 ]).config(function ($locationProvider, $routeProvider, $sceDelegateProvider) {
   'ngInject';
@@ -21,9 +19,6 @@ export const App = angular.module('App', [
 
   $routeProvider
     .when('/:id', {
-      template: '<lobby></lobby>'
-    })
-    .when('/:id/game', {
       template: '<game></game>'
     })
     .when('/', {

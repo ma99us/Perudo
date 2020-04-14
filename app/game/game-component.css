@@ -1,3 +1,7 @@
-status {
+@import "/game/lobby/lobby-component.css";
+@import "/game/board/game-board-component.css";
+@import "/game/score/game-score-component.css";
+
+game {
 
 }

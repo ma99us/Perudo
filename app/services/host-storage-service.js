@@ -30,18 +30,19 @@ export class HostStorageService {
       let protocol = 'ws' + (this.$location.protocol() === 'https' ? 's' : '');
       socketUrl = protocol + '://' + this.$location.host() + ':' + this.$location.port() + url;
     }
+    console.log("--- socket open");
     this.dataStream = this.$websocket(socketUrl);
     this.dataStream.onMessage(message => {
       this.onMessage(message.data)
     }).onOpen(() => {
-      console.log("--- socket opened");
+      console.log("--- on socket opened");
       this.sendMessage({API_KEY: this.API.HOST_API_KEY});  // got to send API_KEY first thing otherwise socket will be closed
     }).onClose(() => {
-      console.log("--- socket closed");
+      console.log("--- on socket closed");
       this.dataStream = null;
       this.sessionId = null;
     }).onError(err => {
-      console.log("--- error: " + err);
+      console.log("--- on socket error: " + err);
     });
   }
 
@@ -57,6 +58,7 @@ export class HostStorageService {
     this.dataStream.onErrorCallbacks = [];
 
     // close and reset socket sessoin
+    console.log("--- socket close");
     this.dataStream.close();
     this.dataStream = null;
     this.sessionId = null;

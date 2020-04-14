@@ -1,6 +1,6 @@
 /* app css stylesheet */
 @import "./game/game-component.css";
-@import "./lobby/lobby-component.css";
+@import "./home/home-component.css";
 
 div{
     margin: 5px;

@@ -8,9 +8,9 @@ export function HomeLobbyDirective() {
     //bindToController: true,
     // controller: function ($attrs, $scope) {
     //   'ngInject';
-    //   console.log("this.lobby=" + this.lobby);
-    //   console.log("$attrs.lobby=" + $attrs.lobby);
-    //   console.log("$scope.lobby=" + $scope.lobby);
+    //   console.log("this.game=" + this.game);
+    //   console.log("$attrs.game=" + $attrs.game);
+    //   console.log("$scope.game=" + $scope.game);
     // }
   };
 }

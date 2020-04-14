@@ -1,0 +1,16 @@
+<h1 style="text-align: center">PERUDO</h1>
+
+<p4>{{$ctrl.error}}</p4>
+<div>
+    <!--<button ng-click="$ctrl.getPlayers()">Get all</button>-->
+</div>
+<p>{{$ctrl.count}} players</p>
+<ul>
+    <p ng-show="!$ctrl.players || $ctrl.players.length == 0">--- No one is here yet. ---</p>
+    <li ng-repeat="p in $ctrl.players">
+        {{p}} -
+        <button ng-click="$ctrl.updatePlayer($index, p)">...</button>
+        <button ng-click="$ctrl.deletePlayer($index)">X</button>
+    </li>
+</ul>
+

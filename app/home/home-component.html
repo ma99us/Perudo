@@ -1,0 +1,44 @@
+<div class="align-items-center">
+    <div class="card offset-lg-3 col-lg-6">
+        <h1 class="card-header text-center">PLAYER HOME</h1>
+        <div class="card bg-warning text-white text-center" ng-show="$ctrl.busyMessage">{{$ctrl.busyMessage}}</div>
+        <div class="card bg-danger text-white" ng-show="$ctrl.error">{{$ctrl.error}}</div>
+        <div class="card-body container">
+            <div class="card">
+                <div class="row">
+                    <label class="offset-sm-2 col-sm-4 text-right" for="player-name">Player name: </label>
+                    <input class="col-sm-4" id="player-name" type="text" placeholder="How do we call you?"
+                           ng-model="$ctrl.player.name">
+                </div>
+                <div class="row">
+                    <label class="offset-sm-2 col-sm-4 text-right" for="player-color">Favorite color:</label>
+                    <input class="col-sm-1" type="color" id="player-color" name="player-color"
+                           ng-model="$ctrl.player.color">
+                </div>
+            </div>
+            <div class="text-center">
+                <button ng-click="$ctrl.newLobby()">Start New Game</button>
+            </div>
+            <div class="text-center" ng-show="$ctrl.lobbies && $ctrl.lobbies.length > 0">
+                or join a game lobby:
+            </div>
+            <div class="vertical-scroll">
+                <ul>
+                    <li ng-repeat="l in $ctrl.lobbies">
+                        <div class="row">
+                            <div class="col-sm-8 text-nowrap">
+                                <home-lobby lobby=l></home-lobby>
+                            </div>
+                            <div class="col-sm-3">-
+                                <button ng-show="l.state === 'LOBBY'" ng-click="$ctrl.joinLobby(l.id)">Join</button>
+                                <span ng-show="l.state === 'GAME'">in game</span>
+                                <span ng-show="l.state === 'FINISHED'">finished</span>
+                                <span ng-show="!l.state">...</span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

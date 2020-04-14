@@ -1,0 +1,23 @@
+/* app css stylesheet */
+@import "./game/game-component.css";
+@import "./lobby/lobby-component.css";
+
+div{
+    margin: 5px;
+}
+
+.vertical-scroll{
+    max-height: 40vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.vertical-scroll p{
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.vertical-scroll div{
+    margin-top: 2px;
+    margin-bottom: 2px;
+}

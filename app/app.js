@@ -1,10 +1,10 @@
 // import angular from './lib/angular';
-import "/lib/angular-route/angular-route.js";
-import "/lib/angular-resource/angular-resource.js";
-import "/lib/angular-sanitize/angular-sanitize.js";
+import "./lib/angular-route/angular-route.js";
+import "./lib/angular-resource/angular-resource.js";
+import "./lib/angular-sanitize/angular-sanitize.js";
 
-import {HomeModule} from "/home/home-module.js";
-import {GameModule} from "/game/game-module.js";
+import {HomeModule} from "./home/home-module.js";
+import {GameModule} from "./game/game-module.js";
 
 export const App = angular.module('App', [
   'ngRoute',

@@ -1,7 +1,7 @@
 export function LobbyPlayerDirective() {
   return {
     restrict: 'E',
-    templateUrl: '/game/lobby/lobby-player-directive.html',
+    templateUrl: './game/lobby/lobby-player-directive.html',
     scope: true,
     bindToController: {
       index: '=',

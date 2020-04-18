@@ -82,7 +82,11 @@ export class GameBoardController {
         this.playerData.bet = null;
         this.playerData.dice = [];
         this.playerData.state = GameState.ROLL;
-        return this.updatePlayersData(this.makePublicPlayerData());
+        if(this.playerData.diceNum > 0){
+          return this.updatePlayersData(this.makePublicPlayerData());
+        } else {
+          return this.rollDice();
+        }
       }
       if(this.isHost && this.gameData.winner){
         // this game is Over. Show Score screen.
@@ -151,12 +155,12 @@ export class GameBoardController {
   }
 
   checkAllPlayersRolled() {
-    let rolled = this.playersData.filter((p) => p.state === GameState.ROLLED);
+    let rolled = this.playersData.filter((p) => p.state === GameState.ROLLED || p.diceNum === 0);
     return rolled.length === this.playerService.players.length;
   }
 
   checkAllPlayersRevealed() {
-    let revealed = this.playersData.filter((p) => p.state === GameState.REVEALED);
+    let revealed = this.playersData.filter((p) => p.state === GameState.REVEALED || p.diceNum === 0);
     return revealed.length === this.playerService.players.length;
   }
 

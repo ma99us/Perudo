@@ -1,23 +1,24 @@
 // import config constants
-import {API} from "/config/config-constant.js";
+import {API} from "../config/config-constant.js";
 
 // import app services
-import {LocalStorageService} from "/services/local-storage-service.js";
-import {HostStorageService} from "/services/host-storage-service.js";
-import {MessageBusService} from "/services/message-bus-service.js";
-import {AlertService} from "/services/alert-service.js";
+import {LocalStorageService} from "../services/local-storage-service.js";
+import {HostStorageService} from "../services/host-storage-service.js";
+import {MessageBusService} from "../services/message-bus-service.js";
+import {AlertService} from "../services/alert-service.js";
+
 // import game services
-import {LobbyService} from "/game/lobby-service.js";
-import {PlayerService} from "/game/player-service.js";
+import {LobbyService} from "./lobby-service.js";
+import {PlayerService} from "./player-service.js";
 
 // import app components
-import {LobbyComponent} from "/game/lobby/lobby-component.js";
-import {GameComponent} from "/game/game-component.js";
-import {GameBoardComponent} from "/game/board/game-board-component.js";
-import {GameScoreComponent} from "/game/score/game-score-component.js";
+import {LobbyComponent} from "./lobby/lobby-component.js";
+import {GameComponent} from "./game-component.js";
+import {GameBoardComponent} from "./board/game-board-component.js";
+import {GameScoreComponent} from "./score/game-score-component.js";
 
 // directives
-import {LobbyPlayerDirective} from "/game/lobby/lobby-player-directive.js";
+import {LobbyPlayerDirective} from "./lobby/lobby-player-directive.js";
 
 export const GameModule = angular
   .module('game', [])

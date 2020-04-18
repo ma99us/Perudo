@@ -1,16 +1,16 @@
 // import config constants
-import {API} from "/config/config-constant.js";
+import {API} from "../config/config-constant.js";
 
 // import app services
-import {LocalStorageService} from "/services/local-storage-service.js";
-import {HostStorageService} from "/services/host-storage-service.js";
-import {MessageBusService} from "/services/message-bus-service.js";
+import {LocalStorageService} from "../services/local-storage-service.js";
+import {HostStorageService} from "../services/host-storage-service.js";
+import {MessageBusService} from "../services/message-bus-service.js";
 
 // import app components
-import {HomeComponent} from "/home/home-component.js";
+import {HomeComponent} from "./home-component.js";
 
 // directives
-import {HomeLobbyDirective} from "/home/home-lobby/home-lobby-directive.js";
+import {HomeLobbyDirective} from "./home-lobby/home-lobby-directive.js";
 
 export const HomeModule = angular
   .module('home', [])

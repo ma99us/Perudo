@@ -1,7 +1,7 @@
 export function HomeLobbyDirective() {
   return {
     restrict: 'E',
-    templateUrl: '/home/home-lobby/home-lobby-directive.html',
+    templateUrl: './home/home-lobby/home-lobby-directive.html',
     scope: {
       lobby: '='
     },

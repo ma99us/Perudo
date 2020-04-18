@@ -1,6 +1,6 @@
 export const API = new function () {
-  //this.HOST_LOCATION = '';   // <- release (localhost)
-  this.HOST_LOCATION = 'ghost:8181';  // <- development (beta)
+  this.HOST_LOCATION = '';   // <- release (localhost)
+  //this.HOST_LOCATION = 'ghost:8181';  // <- development (beta)
   //this.HOST_LOCATION = 'localhost:8181';  // <- development (alpha)
   this.HOST_API_KEY = 'PERUDO53cr3tK3y';
   this.HOST_DB_NAME = ':memory:perudo-';

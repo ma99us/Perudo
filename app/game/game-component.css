@@ -1,6 +1,6 @@
-@import "/game/lobby/lobby-component.css";
-@import "/game/board/game-board-component.css";
-@import "/game/score/game-score-component.css";
+@import "./lobby/lobby-component.css";
+@import "./board/game-board-component.css";
+@import "./score/game-score-component.css";
 
 game {
 

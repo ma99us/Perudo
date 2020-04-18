@@ -1,5 +1,3 @@
-// import {LocalStorageService} from "../services/local-storage-service";
-
 export class HomeController {
   constructor($location, LocalStorageService, API, HostStorageService, MessageBusService, AlertService) {
     'ngInject';

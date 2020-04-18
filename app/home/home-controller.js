@@ -101,4 +101,13 @@ export class HomeController {
         this.alertService.error(err);
       })
   }
+
+  debugDeleteAllLobbies() {
+    return this.hostStorageService.delete("lobbies")
+      .then(() => {
+        this.alertService.message();
+      }).catch(err => {
+        this.alertService.error(err);
+      });
+  }
 }

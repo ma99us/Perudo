@@ -25,7 +25,7 @@
                             <lobby-player index="$index" player="p" self="$ctrl.game.playerService.player"></lobby-player>
                         </div>
                         <div class="col-sm-3" ng-show="$ctrl.game.playerService.canEditPlayer(p)">-
-                            <button ng-click="$ctrl.game.playerService.removePlayer(p)">X</button>
+                            <button ng-click="$ctrl.game.playerService.removePlayers(p)">X</button>
                         </div>
                     </div>
                 </li>

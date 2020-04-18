@@ -41,5 +41,12 @@
                 </ul>
             </div>
         </div>
+        <div class="card-footer text-center">
+            <!-- DEBUG ONLY! -->
+            <button ng-if="$ctrl.player.name.startsWith('Mike ')"
+                    ng-click="$ctrl.debugDeleteAllLobbies()">
+                !DELETE ALL!
+            </button>
+        </div>
     </div>
 </div>

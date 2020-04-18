@@ -11,13 +11,26 @@ export class GameScoreController {
     this.lobbyService = LobbyService;
     this.playerService = PlayerService;
 
+    this.gameData = null;
   }
 
   $onInit() {
     console.log("* Game Score; game=" + this.game);
+
+    this.getGameData();
   }
 
   $onDestroy() {
+  }
+
+  getGameData() {
+    return this.hostStorageService.get("gameData").then(data => {
+        this.alertService.message();
+        this.gameData = data;
+      })
+      .catch(err => {
+        this.alertService.error(err);
+      })
   }
 
   newLobby() {

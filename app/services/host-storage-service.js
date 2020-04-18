@@ -93,7 +93,7 @@ export class HostStorageService {
     } else if (event.event === 'ERROR') {
       console.log("-- session error: " + event.message);
       this.notify('session-event', event);
-    } else/* if (this.sessionId !== event.sessionId)*/ {  // ignore our own updates
+    } else/* if (this.sessionId !== event.sessionId)*/ {  // do not ignore our own updates
       //console.log(message);
       console.log("-- DB event " + event.event + " for key=" + event.key + " from session id: " + event.sessionId);
       this.notify('db-event', event);

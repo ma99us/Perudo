@@ -16,15 +16,31 @@ export class PlayerService {
   }
 
   isValidPlayer(player) {
-    return player && player.name;
+    return player && player.name && player.id;
   }
 
   canEditPlayer(player) {
-    return this.player.isHost || this.player.name === player.name;
+    return this.player.isHost || this.player.id === player.id;
   }
 
-  checkSelf() {
-    return this.players.findIndex(p => p.name === this.player.name);
+  findSelfPlayerIndex() {
+    return this.players.findIndex(p => p.id === this.player.id);
+  }
+
+  getPlayerByIndex(index){
+    return this.players[index];
+  }
+
+  getPlayerById(id){
+    return this.players.find(p => p.id === id);
+  }
+
+  getPrevPlayerIndex(index) {
+    return index > 0 ? index - 1 : this.players.length - 1;
+  }
+
+  getNextPlayerIndex(index) {
+    return index < (this.players.length - 1) ? index + 1 : 0;
   }
 
   getPlayers() {
@@ -36,7 +52,7 @@ export class PlayerService {
     })
   }
 
-  updatePlayer(player) {
+  updatePlayers(player) {
     return this.hostStorageService.update("players", player).then(data => {
       this.alertService.message();
     }).catch(err => {
@@ -44,7 +60,7 @@ export class PlayerService {
     })
   }
 
-  removePlayer(player) {
+  removePlayers(player) {
     return this.hostStorageService.delete("players", player.id).then(data => {
       this.alertService.message();
     }).catch(err => {
@@ -52,7 +68,7 @@ export class PlayerService {
     })
   }
 
-  addPlayer(player) {
+  addPlayers(player) {
     return this.hostStorageService.add("players", player).then(data => {
       this.alertService.message();
     }).catch(err => {

@@ -15,7 +15,7 @@ export function LobbyPlayerDirective() {
       };
 
       this.isSelf = function () {
-        return this.player.name === this.self.name;
+        return this.player && this.self && this.player.id === this.self.id;
       };
 
       this.isHost = function () {

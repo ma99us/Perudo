@@ -78,7 +78,7 @@ export class GameController {
     this.getState()
       .then(() => {
         this.alertService.message();
-        if(!this.state || this.state === 'LOBBY'){
+        if(!this.state/* || this.state === 'LOBBY'*/){
           return this.lobbyService.getLobby(this.id);
         }
       })
@@ -87,7 +87,7 @@ export class GameController {
       })
       .then(() => {
         if ((!this.state || this.state === 'LOBBY') && !this.playerService.player.inLobby) {
-          return this.playerService.addPlayer(this.playerService.player);
+          return this.playerService.addPlayers(this.playerService.player);
         }
       })
       .catch(err => {
@@ -103,7 +103,7 @@ export class GameController {
   }
 
   checkSelf() {
-    const idx = this.playerService.checkSelf();
+    const idx = this.playerService.findSelfPlayerIndex();
     this.playerService.player.isHost = idx === 0; // player index 0 is always a host
     if (!this.playerService.player.inLobby && idx >= 0) { // was not in game, but now is
       this.playerService.player.inLobby = true;
@@ -144,7 +144,7 @@ export class GameController {
   }
 
   registerLobby() {
-    if (!this.playerService.player.isHost) {
+    if (!this.playerService.player.isHost || (this.state && this.state !== 'LOBBY')) {
       return;
     }
     const lobby = {

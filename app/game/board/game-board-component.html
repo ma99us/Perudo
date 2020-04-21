@@ -25,10 +25,10 @@
                             Bet: {{$ctrl.findPlayersData(p).bet.num}} of {{$ctrl.findPlayersData(p).bet.val}}'s
                         </p>
                         <p ng-show="$index === $ctrl.gameData.playerTurn && $ctrl.gameData.gameState === 'REVEALED'">
-                            Doodo!
+                            <strong class="text-warning glow-black">DUDO!</strong>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.lastLoserIndex && $ctrl.gameData.gameState === 'REVEALED'">
-                            Lost!
+                            <strong class="text-danger glow-black">LOST!</strong>
                         </p>
                     </div>
                 </div>
@@ -37,8 +37,9 @@
         <div class="text-center">
             <h4 ng-show="$ctrl.gameData.prompt">{{$ctrl.gameData.prompt}}</h4>
             <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
+                <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <3</h5>
                 <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice</h6>
-                <h6 ng-show="$ctrl.playerData.diceNum == 1">You have the last dice. Make it count!</h6>
+                <h5 ng-show="$ctrl.playerData.diceNum === 1">You have the last dice. Make it count!</h5>
                 <button ng-click="$ctrl.rollDice()">
                     Roll Dice
                 </button>
@@ -67,10 +68,15 @@
                     Dudo
                 </button>
             </div>
-            <button ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost"
-                    ng-click="$ctrl.endRound()">
-                {{$ctrl.checkForWinnerPlayer() ? 'Final Scores' : 'Next Round'}}
-            </button>
+            <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost > 0">
+                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.isSelfJustLost === 1">Better luck next time!</h5>
+                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.isSelfJustLost === 2">Oof! You lost again. Bummer!</h5>
+                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.isSelfJustLost > 2">Ahh! Maybe this is not your game.</h5>
+                <h5 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry :-(</h5>
+                <button ng-click="$ctrl.endRound()">
+                    {{$ctrl.checkForWinnerPlayer() ? 'Final Scores' : 'Next Round'}}
+                </button>
+            </div>
         </div>
     </div>
     <div class="card-footer text-center">

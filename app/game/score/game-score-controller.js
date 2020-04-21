@@ -12,6 +12,7 @@ export class GameScoreController {
     this.playerService = PlayerService;
 
     this.gameData = null;
+    this.playedAt = null;
   }
 
   $onInit() {
@@ -27,6 +28,7 @@ export class GameScoreController {
     return this.hostStorageService.get("gameData").then(data => {
         this.alertService.message();
         this.gameData = data;
+        this.playedAt = this.game.lastStateUpdate;
       })
       .catch(err => {
         this.alertService.error(err);

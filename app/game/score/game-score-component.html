@@ -11,6 +11,7 @@
     </div>
     <div class="card-body container text-center">
         <div ng-if="$ctrl.game.state === 'FINISHED'">
+            <small ng-show="$ctrl.playedAt">Finished at {{$ctrl.playedAt | date:'medium'}}</small>
             <h2>Winner is
                 <lobby-player player="$ctrl.gameData.winner"></lobby-player>
                 with {{$ctrl.gameData.winnerDiceLeft}} dice left.

@@ -195,7 +195,7 @@ export class GameBoardController {
   }
 
   get isSelfJustLost() {
-    return this.selfIndex === this.gameData.lastLoserIndex;
+    return this.selfIndex === this.gameData.lastLoserIndex ? this.gameData.lastLoserStreek + 1 : 0;
   }
 
   findLastBet() {
@@ -314,9 +314,11 @@ export class GameBoardController {
     this.gameData.playerTurn = this.gameData.nextPlayerTurn;
     // reset last round info
     this.gameData.nextPlayerTurn = null;
+    this.gameData.lastLoserStreek = (this.gameData.lastLoserIndex === this.selfIndex) ? (this.gameData.lastLoserStreek + 1) : 1;
     this.gameData.lastLoserIndex = null;
     this.gameData.lastBet = null;
     this.gameData.lastRoundLength = 0;
+    this.gameData.totalRounds++;
     this.gameData.prompt = null;
     this.gameData.gameState = GameState.ROLL;
     this.updateGameData();
@@ -438,7 +440,8 @@ export class GameBoardController {
           this.gameData = {
             gameState: GameState.ROLL,  // no game state yet, assume first round ROLL
             playerTurn: 0,
-            lastRoundLength: 0
+            lastRoundLength: 0,
+            totalRounds: 0
           };
           if(this.isHost){
             return this.updateGameData(this.gameData);

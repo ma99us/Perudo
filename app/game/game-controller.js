@@ -125,20 +125,43 @@ export class GameController {
   }
 
   getState() {
-    return this.hostStorageService.get("state").then(data => {
+    let stateUpdated = false;
+    return this.hostStorageService.get("state")
+      .then(data => {
       this.alertService.message();
-      if(this.state !== data){
-        this.state = data;
-        this.updateLobby();
-      }
-    }).catch(err => {
-      this.alertService.error(err);
+        if (this.state !== data) {
+          this.state = data;
+          stateUpdated = true;
+        }
+      })
+      .then(() => {
+        if(stateUpdated){
+          return this.hostStorageService.get("lastStateUpdate")
+        }
+      })
+      .then(data => {
+        if(stateUpdated && data){
+          this.lastStateUpdate = new Date(data);
+        }
+      })
+      .then(() => {
+        if (stateUpdated) {
+          this.updateLobby();
+        }
+      })
+      .catch(err => {
+        this.alertService.error(err);
     })
   }
 
   updateState(state) {
+    let stateUpdated = this.state !== state;
     return this.hostStorageService.update("state", state).then(data => {
       this.alertService.message();
+      if(stateUpdated){
+        let lastStateUpdate = new Date();
+        return this.hostStorageService.update("lastStateUpdate", lastStateUpdate.getTime());
+      }
     }).catch(err => {
       this.alertService.error(err);
     })
@@ -161,7 +184,8 @@ export class GameController {
       gameName: this.gameName,
       playersNum: this.playerService.players.length,
       host: this.playerService.player.name,
-      state: this.state
+      state: this.state,
+      lastStateUpdate: this.lastStateUpdate
     };
     return this.lobbyService.updateLobby()
       .then(data => {
@@ -183,6 +207,7 @@ export class GameController {
     this.lobbyService.lobby.playersNum = this.playerService.players.length;
     this.lobbyService.lobby.host = this.playerService.player.name;
     this.lobbyService.lobby.state =  this.state;
+    this.lobbyService.lobby.lastStateUpdate =  this.lastStateUpdate;
     return this.lobbyService.updateLobby();
   }
 }

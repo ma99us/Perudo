@@ -24,7 +24,7 @@
                         <div class="col-sm-8 text-nowrap">
                             <lobby-player index="$index" player="p" self="$ctrl.game.playerService.player"></lobby-player>
                         </div>
-                        <div class="col-sm-4" ng-show="$ctrl.game.playerService.canEditPlayer(p)">-
+                        <div class="col-sm-4" ng-show="$ctrl.game.playerService.player.isHost">-
                             <button ng-click="$ctrl.game.playerService.removePlayers(p)">Kick!</button>
                         </div>
                     </div>
@@ -33,7 +33,7 @@
         </div>
     </div>
     <div class="text-center">
-        <button ng-if="$ctrl.game.playerService.player.isHost && $ctrl.game.state === 'LOBBY'"
+        <button ng-if="$ctrl.game.state === 'LOBBY'"
                 ng-click="$ctrl.leaveGame()">Leave Lobby
         </button>
         <button ng-if="$ctrl.game.playerService.player.isHost && $ctrl.game.state === 'LOBBY'"

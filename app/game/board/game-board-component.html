@@ -1,6 +1,6 @@
 <div class="card offset-lg-3 col-lg-6">
     <div class="card-header text-center">
-        <h1>GAME BOARD</h1>
+        <h1>NO-NONSENSE PERUDO</h1>
         (game id: {{$ctrl.game.id}})
     </div>
     <div class="card bg-warning text-white text-center" ng-show="$ctrl.game.alertService.alert.isWarning()">
@@ -13,9 +13,12 @@
         <ul class="list-unstyled row" ng-repeat="p in $ctrl.playerService.players track by $index">
             <li class="col-12" ng-class="$index === $ctrl.gameData.playerTurn ? 'list-item list-group-item-info' : 'list-item'">
                 <div class="row text-nowrap">
-                    <lobby-player class="col-4" player="p" self="$ctrl.playerService.player"></lobby-player>
-                    <div class="col-1" ng-repeat="d in $ctrl.findPlayersData(p).dice track by $index">{{$ctrl.getDice(p,
-                        $index)}}
+                    <lobby-player class="col-4"
+                                  mute="$ctrl.findPlayersData(p).diceNum === 0 && !p.spectator"
+                                  player="p" self="$ctrl.playerService.player"></lobby-player>
+                    <div class="col-1" ng-repeat="d in [].constructor(5) track by $index">
+                        <!--<dice color="$ctrl.getDice(p, $index).color" value="$ctrl.getDice(p, $index).value" mark="$ctrl.getDice(p, $index).mark"></dice>-->
+                        <dice val="$ctrl.getDice(p, $parent.$index, $index)"></dice>
                     </div>
                     <div class="col-2">
                         <p ng-show="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.findPlayersData(p).bet">
@@ -33,29 +36,38 @@
         </ul>
         <div class="text-center">
             <h4 ng-show="$ctrl.gameData.prompt">{{$ctrl.gameData.prompt}}</h4>
-            <button ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll()"
-                    ng-click="$ctrl.rollDice()">
-                Roll Dice
-            </button>
-            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.isSelfTurn()">
-                <h4 ng-show="$ctrl.gameData.lastRoundLength > 0">
+            <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
+                <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum == 1">You have the last dice. Make it count!</h6>
+                <button ng-click="$ctrl.rollDice()">
+                    Roll Dice
+                </button>
+            </div>
+            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.isSelfTurn">
+                <h6 ng-show="$ctrl.diceInPlay > 0">Total dice in play: {{$ctrl.diceInPlay}}</h6>
+                <h4 ng-show="!$ctrl.isFirstTurn">
                     Last bet: {{$ctrl.findLastBet().num}} of {{$ctrl.findLastBet().val}}'s
                 </h4>
-                <input id="betDiceNum" type="number" ng-model="$ctrl.num" ng-change="$ctrl.num = $ctrl.validateNum($ctrl.num)">
+                Your bet:
+                <num-input value="$ctrl.bet.num" min="1" max="99"></num-input>
+                <!--<input id="betDiceNum" type="number" ng-model="$ctrl.bet.num" ng-change="$ctrl.bet.num = $ctrl.validateNum($ctrl.bet.num)"-->
+                       <!--min="1" max="99" style="width: 3em">-->
                 of
-                <input id="betDiceVal" type="number" ng-model="$ctrl.val" ng-change="$ctrl.val = $ctrl.validateVal($ctrl.val)">
+                <num-input value="$ctrl.bet.val" min="1" max="6"></num-input>
+                <!--<input id="betDiceVal" type="number" ng-model="$ctrl.bet.val" ng-change="$ctrl.bet.val = $ctrl.validateVal($ctrl.bet.val)"-->
+                       <!--min="1" max="6" style="width: 3em">-->
                 's
-                <button ng-disabled="!$ctrl.validateBet($ctrl.num, $ctrl.val)"
-                        ng-click="$ctrl.bet($ctrl.num, $ctrl.val)">
+                <button ng-disabled="!$ctrl.validateBet($ctrl.bet.num, $ctrl.bet.val)"
+                        ng-click="$ctrl.makeBet($ctrl.bet.num, $ctrl.bet.val)">
                     Make Bet
                 </button>
-                <span ng-show="$ctrl.gameData.lastRoundLength > 0"> or </span>
-                <button ng-show="$ctrl.gameData.lastRoundLength > 0"
-                        ng-click="$ctrl.dudo()">
+                <span ng-show="!$ctrl.isFirstTurn"> or </span>
+                <button ng-show="!$ctrl.isFirstTurn"
+                        ng-click="$ctrl.callDudo()">
                     Dudo
                 </button>
             </div>
-            <button ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfTurn()"
+            <button ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost"
                     ng-click="$ctrl.endRound()">
                 {{$ctrl.checkForWinnerPlayer() ? 'Final Scores' : 'Next Round'}}
             </button>

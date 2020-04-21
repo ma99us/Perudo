@@ -72,22 +72,22 @@ export class GameController {
     }
 
     this.unregisterLobby();
+    this.playerService.unloadPlayer();
   }
 
   onOpened() {
     this.getState()
       .then(() => {
         this.alertService.message();
-        if(!this.state/* || this.state === 'LOBBY'*/){
-          return this.lobbyService.getLobby(this.id);
-        }
+        return this.lobbyService.getLobby(this.id);
       })
       .then(() => {
         return this.getPlayers();
       })
       .then(() => {
-        if ((!this.state || this.state === 'LOBBY') && !this.playerService.player.inLobby) {
-          return this.playerService.addPlayers(this.playerService.player);
+        if (!this.playerService.player.inLobby) {
+          this.playerService.player.spectator = !(!this.state || this.state === 'LOBBY');
+          return this.playerService.updatePlayers(this.playerService.player);
         }
       })
       .catch(err => {
@@ -95,7 +95,16 @@ export class GameController {
       })
       .finally(() => {
         this.alertService.message();
+        this.playerService.isReady = true;
+        this.notify('game-event', {
+          source: 'PlayerService',
+          isReady: this.playerService.isReady
+        });
       });
+  }
+
+  notify(name, event) {
+    this.messageBusService.broadcast(name, event);
   }
 
   goHome() {
@@ -144,17 +153,17 @@ export class GameController {
   }
 
   registerLobby() {
-    if (!this.playerService.player.isHost || (this.state && this.state !== 'LOBBY')) {
+    if (!this.playerService.player.isHost || this.state || this.lobbyService.lobby) {
       return;
     }
-    const lobby = {
+    this.lobbyService.lobby = {
       id: this.id,
       gameName: this.gameName,
       playersNum: this.playerService.players.length,
       host: this.playerService.player.name,
       state: this.state
     };
-    return this.lobbyService.registerLobby(lobby)
+    return this.lobbyService.updateLobby()
       .then(data => {
         return this.updateState('LOBBY');
       })
@@ -171,11 +180,9 @@ export class GameController {
     if (!this.playerService.player.isHost) {
       return;
     }
-    const lobby = {
-      playersNum: this.playerService.players.length,
-      host: this.playerService.player.name,
-      state: this.state
-    };
-    return this.lobbyService.updateLobby(lobby);
+    this.lobbyService.lobby.playersNum = this.playerService.players.length;
+    this.lobbyService.lobby.host = this.playerService.player.name;
+    this.lobbyService.lobby.state =  this.state;
+    return this.lobbyService.updateLobby();
   }
 }

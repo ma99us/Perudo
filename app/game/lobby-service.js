@@ -6,7 +6,7 @@ export class LobbyService {
     this.hostStorageService = HostStorageService;
     this.alertService = AlertService;
 
-    this.lobby = null;  // current game game registration. (key is in a separate/parent database!)
+    this.lobby = null;  // current game lobby registration. (key is in a separate/parent database!)
   }
 
   getLobby(id) {
@@ -20,19 +20,6 @@ export class LobbyService {
       })
   }
 
-  registerLobby(lobby) {
-    if (this.lobby) {
-      return;
-    }
-    return this.hostStorageService.add("lobbies", lobby, 0, this.API.HOST_DB_NAME)  // use home db
-      .then(data => {
-        this.alertService.message();
-        this.lobby = lobby;
-      }).catch(err => {
-        this.alertService.error(err);
-      });
-  }
-
   unregisterLobby() {
     if (!this.lobby) {
       return;
@@ -40,19 +27,17 @@ export class LobbyService {
     return this.hostStorageService.delete("lobbies", this.lobby.id, null, this.API.HOST_DB_NAME)   // use home db
       .then(() => {
         this.alertService.message();
+        this.lobby = null;
       })// use home db
       .catch(err => {
         this.alertService.error(err);
       });
   }
 
-  updateLobby(lobby) {
+  updateLobby() {
     if (!this.lobby) {
       return;
     }
-    this.lobby.playersNum = lobby.playersNum;
-    this.lobby.host = lobby.host;
-    this.lobby.state = lobby.state;
     return this.hostStorageService.update("lobbies", this.lobby, null, this.API.HOST_DB_NAME)   // use home db
       .then(() => {
         this.alertService.message();

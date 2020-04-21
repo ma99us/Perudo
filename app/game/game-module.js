@@ -19,6 +19,8 @@ import {GameScoreComponent} from "./score/game-score-component.js";
 
 // directives
 import {LobbyPlayerDirective} from "./lobby/lobby-player-directive.js";
+import {GameBoardDiceDirective} from "./board/dice-directive.js";   //TODO: should not be global
+import {GameBoardNumInputDirective} from "./board/num-input-directive.js";   //TODO: should not be global
 
 export const GameModule = angular
   .module('game', [])
@@ -34,4 +36,6 @@ export const GameModule = angular
   .component('board', GameBoardComponent)
   .component('score', GameScoreComponent)
   .directive('lobbyPlayer', LobbyPlayerDirective)
+  .directive('dice', GameBoardDiceDirective)
+  .directive('numInput', GameBoardNumInputDirective)
   .name;

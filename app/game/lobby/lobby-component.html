@@ -9,7 +9,7 @@
     <div class="card bg-danger text-white" ng-show="$ctrl.game.alertService.alert.isError()">
         {{$ctrl.game.alertService.alert.message}}
     </div>
-    <div class="card-body container">
+    <div class="card-body">
         <div class="info text-info text-center" ng-show="$ctrl.game.playerService.players">
             {{$ctrl.game.playerService.players.length}}
             player{{$ctrl.game.players.length !==1 ? 's' : ''}}
@@ -19,13 +19,13 @@
                 --- No one here yet
                 ---</p>
             <ul>
-                <li ng-repeat="p in $ctrl.game.playerService.players">
+                <li class="col-12" ng-repeat="p in $ctrl.game.playerService.players">
                     <div class="row">
                         <div class="col-sm-8 text-nowrap">
                             <lobby-player index="$index" player="p" self="$ctrl.game.playerService.player"></lobby-player>
                         </div>
-                        <div class="col-sm-3" ng-show="$ctrl.game.playerService.canEditPlayer(p)">-
-                            <button ng-click="$ctrl.game.playerService.removePlayers(p)">X</button>
+                        <div class="col-sm-4" ng-show="$ctrl.game.playerService.canEditPlayer(p)">-
+                            <button ng-click="$ctrl.game.playerService.removePlayers(p)">Kick!</button>
                         </div>
                     </div>
                 </li>
@@ -34,8 +34,10 @@
     </div>
     <div class="text-center">
         <button ng-if="$ctrl.game.playerService.player.isHost && $ctrl.game.state === 'LOBBY'"
-                ng-click="$ctrl.startGame()">Start
-            Game
+                ng-click="$ctrl.leaveGame()">Leave Lobby
+        </button>
+        <button ng-if="$ctrl.game.playerService.player.isHost && $ctrl.game.state === 'LOBBY'"
+                ng-click="$ctrl.startGame()">Start Game
         </button>
     </div>
 </div>

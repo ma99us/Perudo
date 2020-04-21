@@ -2,6 +2,7 @@
 @import "./board/game-board-component.css";
 @import "./score/game-score-component.css";
 
-game {
-
+.row div {
+    margin-left: 0px;
+    margin-right: 0px;
 }

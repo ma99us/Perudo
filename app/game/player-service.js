@@ -7,12 +7,22 @@ export class PlayerService {
     this.hostStorageService = HostStorageService;
     this.alertService = AlertService;
 
+    this.isReady = false;   // player is fully initialized
     this.player = null;   // self player
     this.players = [];  // current game players
   }
 
   loadPlayer(gameName) {
     this.player = this.localStorageService.getObject(gameName);
+  }
+
+  unloadPlayer(){
+    this.player = null;
+    this.isReady = false;
+  }
+
+  isSpectator() {
+    return this.player && this.player.spectator;
   }
 
   isValidPlayer(player) {
@@ -67,13 +77,4 @@ export class PlayerService {
       this.alertService.error(err);
     })
   }
-
-  addPlayers(player) {
-    return this.hostStorageService.add("players", player).then(data => {
-      this.alertService.message();
-    }).catch(err => {
-      this.alertService.error(err);
-    })
-  }
-
 }

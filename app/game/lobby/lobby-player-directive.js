@@ -4,9 +4,10 @@ export function LobbyPlayerDirective() {
     templateUrl: './game/lobby/lobby-player-directive.html',
     scope: true,
     bindToController: {
-      index: '=',
-      player: '=',
-      self: '='
+      index: '<',
+      player: '<',
+      self: '<',
+      mute: '<'
     },
     controllerAs: '$ctrl',
     controller: function () {
@@ -21,6 +22,14 @@ export function LobbyPlayerDirective() {
       this.isHost = function () {
         //retun this.player.isHost;
         return this.index === 0;  //TODO: make the line above work instead
+      };
+
+      this.isSpectator = function() {
+        return this.player && this.player.spectator;
+      };
+
+      this.isMuted = function() {
+        return this.mute;
       }
     }
   };

@@ -1,9 +1,9 @@
 <div class="align-items-center">
     <div class="card offset-lg-3 col-lg-6">
-        <h1 class="card-header text-center">PLAYER HOME</h1>
+        <h1 class="card-header text-center">HFG ARENA (beta)</h1>
         <div class="card bg-warning text-white text-center" ng-show="$ctrl.alertService.alert.isWarning()">{{$ctrl.alertService.alert.message}}</div>
         <div class="card bg-danger text-white" ng-show="$ctrl.alertService.alert.isError()">{{$ctrl.alertService.alert.message}}</div>
-        <div class="card-body container">
+        <div class="card-body">
             <div class="card">
                 <div class="row">
                     <label class="offset-sm-2 col-sm-4 text-right" for="player-name">Player name: </label>
@@ -20,20 +20,24 @@
                 <button ng-click="$ctrl.newLobby()">Start New Game</button>
             </div>
             <div class="text-center" ng-show="$ctrl.lobbies && $ctrl.lobbies.length > 0">
-                or join a game game:
+                or join a game lobby:
             </div>
             <div class="vertical-scroll">
                 <ul>
-                    <li ng-repeat="l in $ctrl.lobbies">
-                        <div class="row">
-                            <div class="col-sm-8 text-nowrap">
+                    <li class="col-12" ng-repeat="l in $ctrl.lobbies">
+                        <div class="row text-nowrap">
+                            <div class="col-sm-8">
                                 <home-lobby lobby=l></home-lobby>
                             </div>
-                            <div class="col-sm-3">-
+                            <div class="col-sm-4">-
                                 <span ng-show="!l.state">...</span>
                                 <button ng-show="l.state === 'LOBBY'" ng-click="$ctrl.joinLobby(l.id)">Join</button>
-                                <span ng-show="l.state === 'GAME'">in game</span>
-                                <span ng-show="l.state === 'FINISHED'">finished <button ng-show="$ctrl.player.name === l.host" ng-click="$ctrl.deleteLobby(l.id)">X</button>
+                                <span ng-show="l.state === 'GAME'">in game
+                                    <button ng-click="$ctrl.joinLobby(l.id)">Spectate</button>
+                                </span>
+                                <span ng-show="l.state === 'FINISHED'">finished
+                                    <!--<button ng-show="$ctrl.player.name === l.host" ng-click="$ctrl.deleteLobby(l.id)">X</button>-->
+                                    <button ng-click="$ctrl.joinLobby(l.id)">View Score</button>
                                 </span>
                             </div>
                         </div>

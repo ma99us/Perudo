@@ -22,4 +22,8 @@ export class LobbyController {
   startGame(){
     this.game.updateState('GAME');
   }
+
+  leaveGame() {
+    this.game.playerService.removePlayers(this.game.playerService.player);
+  }
 }

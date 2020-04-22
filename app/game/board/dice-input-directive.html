@@ -1,0 +1,19 @@
+<span>
+    <dice id="betDiceVal"
+          size="$ctrl.size"
+          color="'white'"
+          nohide="true"
+          value="$ctrl.value"
+          style="width: 3em; height: 3em;">
+    </dice>
+    <button ng-disabled="$ctrl.value <= $ctrl.min"
+            ng-click="$ctrl.dec()"
+            style="width: 2em;">
+       <
+    </button>
+    <button ng-disabled="$ctrl.value >= $ctrl.max"
+            ng-click="$ctrl.enc()"
+            style="width: 2em;">
+        >
+    </button>
+</span>

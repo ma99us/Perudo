@@ -195,7 +195,11 @@ export class GameBoardController {
   }
 
   get isSelfJustLost() {
-    return this.selfIndex === this.gameData.lastLoserIndex ? this.gameData.lastLoserStreek + 1 : 0;
+    return this.selfIndex === this.gameData.lastLoserIndex;
+  }
+
+  get lastLooserStreek() {
+    return this.gameData.lastLoserStreek;
   }
 
   findLastBet() {
@@ -206,6 +210,10 @@ export class GameBoardController {
     let prevPlayer = this.playerService.getPlayerByIndex(prevPlayerIndex);
     let prevPlayerData = this.findPlayersData(prevPlayer);
     return prevPlayerData ? prevPlayerData.bet : null;
+  }
+
+  isLastBetPlayerIndex(index){
+    return this.gameData && index === this.findPrevGoodPlayerIndex(this.gameData.playerTurn);
   }
 
   get isFirstTurn() {
@@ -314,7 +322,7 @@ export class GameBoardController {
     this.gameData.playerTurn = this.gameData.nextPlayerTurn;
     // reset last round info
     this.gameData.nextPlayerTurn = null;
-    this.gameData.lastLoserStreek = (this.gameData.lastLoserIndex === this.selfIndex) ? (this.gameData.lastLoserStreek + 1) : 1;
+    this.gameData.prevLoserIndex = this.gameData.lastLoserIndex;
     this.gameData.lastLoserIndex = null;
     this.gameData.lastBet = null;
     this.gameData.lastRoundLength = 0;
@@ -350,6 +358,7 @@ export class GameBoardController {
       .then(() => {
         this.gameData.lastBet = {num: this.dudo.bet_num, val: this.dudo.bet_val};
         this.gameData.lastLoserIndex = this.selfIndex;
+        this.gameData.lastLoserStreek = (this.gameData.prevLoserIndex === this.gameData.lastLoserIndex) ? (this.gameData.lastLoserStreek + 1) : 1;
         this.gameData.prompt = `Bet ${this.dudo.bet_num} of ${this.dudo.bet_val}'s, revealed: ${this.dudo.total}.` +
           ` \"${this.playerService.player.name}\" loses a dice :-(`;
         // find next player index turn

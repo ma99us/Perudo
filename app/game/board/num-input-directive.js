@@ -6,7 +6,8 @@ export function GameBoardNumInputDirective() {
     bindToController: {
       value: '=',
       min: '<',
-      max: '<'
+      max: '<',
+      size: '<'
     },
     controllerAs: '$ctrl',
     controller: function () {
@@ -18,6 +19,13 @@ export function GameBoardNumInputDirective() {
         if(this.max == null){
           this.max = 99;
         }
+        if(this.size == null){
+          this.size = 2;
+        }
+      };
+
+      this.getSize = function () {
+        return this.size;
       };
 
       this.getStyle = function () {

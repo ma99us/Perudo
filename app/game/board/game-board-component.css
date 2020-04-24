@@ -1,8 +1,8 @@
-.player-out {
+.del {
     text-decoration: line-through;
 }
 
-.dice-marked{
+.marked{
     font-weight: bold;
     font-size: larger;
 }
@@ -13,4 +13,12 @@
 
 .strong {
     font-weight: bold;
+}
+
+.input-marked{
+    display: inline-block;
+    font-weight: bold;
+    font-size: larger;
+    vertical-align: middle;
+    cursor: pointer;
 }

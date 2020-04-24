@@ -39,8 +39,11 @@ export function GameBoardDiceInputDirective() {
         }
       };
 
-      this.enc = function () {
+      this.enc = function (cycle = false) {
         if(this.max != null && this.value + 1 > this.max){
+          if (cycle) {
+            this.value = this.min;
+          }
           return;
         }
         if(this.value == null){

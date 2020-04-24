@@ -10,12 +10,15 @@
         {{$ctrl.game.alertService.alert.message}}
     </div>
     <div class="card-body">
-        <ul class="list-unstyled row" ng-repeat="p in $ctrl.playerService.players track by $index">
-            <li class="col-12" ng-class="$index === $ctrl.gameData.playerTurn ? 'list-item list-group-item-info' : 'list-item'">
-                <div class="row text-nowrap">
-                    <lobby-player class="col-4"
+        <ul class="list-unstyled">
+            <li class="col-12" ng-class="$index === $ctrl.gameData.playerTurn ? 'list-item list-group-item-info' : 'list-item'"
+                ng-repeat="p in $ctrl.playerService.players track by $index">
+                <div class="row">
+                    <div class="col-4" style="height: 2em; vertical-align: middle;">
+                        <lobby-player
                                   mute="$ctrl.findPlayersData(p).diceNum === 0 && !p.spectator"
                                   player="p" self="$ctrl.playerService.player"></lobby-player>
+                    </div>
                     <div class="col-1" ng-repeat="d in [].constructor(5) track by $index">
                         <dice size="2" val="$ctrl.getDice(p, $parent.$index, $index)"></dice>
                     </div>
@@ -39,15 +42,16 @@
         </ul>
         <div class="text-center">
             <h4 ng-show="$ctrl.gameData.prompt">{{$ctrl.gameData.prompt}}</h4>
-            <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
+            <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll" ng-init="selfPlayersData = $ctrl.findSelfPlayersData();">
                 <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <3</h5>
-                <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice</h6>
-                <h5 ng-show="$ctrl.playerData.diceNum === 1">You have the last dice. Make it count!</h5>
+                <h6 ng-show="selfPlayersData.diceNum > 1">You have {{selfPlayersData.diceNum}} dice</h6>
+                <h5 ng-show="selfPlayersData.diceNum === 1">You have the last dice. Make it count!</h5>
                 <button ng-click="$ctrl.rollDice()">
                     Roll Dice
                 </button>
+                <p ng-if="$ctrl.watchdogRD" class="text-warning">{{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
             </div>
-            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.isSelfTurn">
+            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.isSelfTurn" style="user-select: none;">
                 <h6 ng-show="$ctrl.diceInPlay > 0">Total dice in play: {{$ctrl.diceInPlay}}</h6>
                 <h4 ng-show="!$ctrl.isFirstTurn">
                     Last bet: {{$ctrl.findLastBet().num}} of {{$ctrl.findLastBet().val}}'s
@@ -55,7 +59,6 @@
                 Your bet:
                 <num-input value="$ctrl.bet.num" min="1" max="99"></num-input>
                 of
-                <!--<num-input value="$ctrl.bet.val" min="1" max="6"></num-input>-->
                 <dice-input size="3" value="$ctrl.bet.val" min="1" max="6"></dice-input>
                 's
                 <button ng-disabled="!$ctrl.validateBet($ctrl.bet.num, $ctrl.bet.val)"
@@ -67,31 +70,55 @@
                         ng-click="$ctrl.callDudo()">
                     Dudo
                 </button>
+                <p ng-if="$ctrl.watchdogMB" class="text-warning">{{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
             </div>
-            <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost">
-                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h5>
-                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h5>
-                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h5>
-                <h5 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry :-(</h5>
+            <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost" ng-init="selfPlayersData = $ctrl.findSelfPlayersData();">
+                <h5 ng-show="selfPlayersData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h5>
+                <h5 ng-show="selfPlayersData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h5>
+                <h5 ng-show="selfPlayersData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h5>
+                <h5 ng-show="selfPlayersData.diceNum === 0">You are out. Sorry :-(</h5>
                 <button ng-click="$ctrl.endRound()">
                     {{$ctrl.checkForWinnerPlayer() ? 'Final Scores' : 'Next Round'}}
                 </button>
+                <p ng-if="$ctrl.watchdogER" class="text-warning">{{$ctrl.watchdogERts | date: 'mm:ss'}}</p>
             </div>
         </div>
     </div>
     <div class="card-footer text-center">
-        <button ng-if="$ctrl.isHost && $ctrl.gameData.gameState === 'END'"
-                ng-click="$ctrl.finishGame()">
-            Exit Game
-        </button>
-        <!-- DEBUG ONLY! -->
-        <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                ng-click="$ctrl.debugRestGame()">
-            !RESET!
-        </button>
-        <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                ng-click="$ctrl.debugEndGame()">
-            !End Game!
-        </button>
+        <div>
+            <label for="bot-controls">AI controls:</label>
+            <div id="bot-controls" class="btn-group" role="group" aria-label="AI controls:">
+                <button type="button" class="btn btn-outline-secondary"
+                        ng-class="$ctrl.gameBotService.botMode === $ctrl.gameBotService.BotMode.None ? 'active' :''"
+                        ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.None)">
+                    No AI
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        ng-class="$ctrl.gameBotService.botMode === $ctrl.gameBotService.BotMode.Kevin ? 'active' :''"
+                        ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Kevin)">
+                    Mellow Kevin
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        ng-class="$ctrl.gameBotService.botMode === $ctrl.gameBotService.BotMode.Ian ? 'active' :''"
+                        ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Ian)">
+                    Crazy Ian
+                </button>
+            </div>
+        </div>
+        <div>
+            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
+                    ng-click="$ctrl.finishGame()">
+                Exit Game
+            </button>
+            <!-- DEBUG ONLY! -->
+            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
+                    ng-click="$ctrl.debugRestGame()">
+                !RESET!
+            </button>
+            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
+                    ng-click="$ctrl.debugEndGame()">
+                !End Game!
+            </button>
+        </div>
     </div>
 </div>

@@ -1,15 +1,18 @@
 <span>
-  <input id="betDiceVal" type="number"
+    <input hidden id="numInput" type="number"
          ng-model="$ctrl.value" ng-change="$ctrl.value = $ctrl.validateVal($ctrl.value)"
          min="{{$ctrl.min}}" max="{{$ctrl.max}}" ng-style="$ctrl.getStyle()">
     <button ng-disabled="$ctrl.value <= $ctrl.min"
             ng-click="$ctrl.dec()"
-            style="width: 2em;">
-        -
+            style="width: 2em; vertical-align: middle;">
+        <
     </button>
+    <span class="input-marked" style="font-size:{{$ctrl.getSize()}}em;"
+          ng-click="$ctrl.enc()">
+        {{$ctrl.value || '?'}}</span>
     <button ng-disabled="$ctrl.value >= $ctrl.max"
             ng-click="$ctrl.enc()"
-            style="width: 2em;">
-        +
+            style="width: 2em; vertical-align: middle;">
+        >
     </button>
 </span>

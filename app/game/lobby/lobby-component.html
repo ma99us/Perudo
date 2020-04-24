@@ -1,4 +1,4 @@
-<div class="card offset-lg-3 col-lg-6">
+<div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
         <h1>GAME LOBBY</h1>
         (game id: {{$ctrl.game.id}})
@@ -19,13 +19,15 @@
                 --- No one here yet
                 ---</p>
             <ul>
-                <li class="col-12" ng-repeat="p in $ctrl.game.playerService.players">
+                <li class="col-12" ng-repeat="p in $ctrl.game.playerService.players" ng-class="p.id === $ctrl.game.playerService.player.id ? 'list-item list-group-item-info' : 'list-item'">
                     <div class="row">
                         <div class="col-sm-8 text-nowrap">
                             <lobby-player index="$index" player="p" self="$ctrl.game.playerService.player"></lobby-player>
                         </div>
                         <div class="col-sm-4" ng-show="$ctrl.game.playerService.player.isHost">-
                             <button ng-click="$ctrl.game.playerService.removePlayers(p)">Kick!</button>
+                            <button ng-click="$ctrl.moveUpPlayers(p)">Up</button>
+                            <button ng-click="$ctrl.moveDownPlayers(p)">Down</button>
                         </div>
                     </div>
                 </li>

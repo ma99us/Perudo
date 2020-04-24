@@ -10,6 +10,7 @@ export class HomeController {
     this.alertService = AlertService;
 
     this.lobbies = [];
+    this.player = null; // self player
   }
 
   $onInit() {
@@ -25,10 +26,12 @@ export class HomeController {
     });
     this.mbsEventsListener = this.messageBusService.on("session-event", (event, data) => {
       console.log("session-event: " + JSON.stringify(data));
-      if(data.event === 'OPENED' && data.sessionId === this.hostStorageService.sessionId){
+      if (data.event === 'OPENED' && data.sessionId === this.hostStorageService.sessionId) {
         this.onOpened();
-      } else if(data.event === 'ERROR'){
+      } else if (data.event === 'ERROR') {
         this.alertService.error(data.event.message);
+      } else if (data.event === 'CLOSED') {
+        this.alertService.warning(data.event.message);
       }
     });
     this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
@@ -45,13 +48,13 @@ export class HomeController {
 
     this.hostStorageService.disconnect();
 
-    if(this.mbsDbListener){
+    if (this.mbsDbListener) {
       this.mbsDbListener();
     }
-    if(this.mbsEventsListener){
+    if (this.mbsEventsListener) {
       this.mbsEventsListener();
     }
-    if(this.mbsMessagesListener){
+    if (this.mbsMessagesListener) {
       this.mbsMessagesListener();
     }
   }
@@ -64,12 +67,17 @@ export class HomeController {
   }
 
   loadPlayer() {
-    this.player = this.localStorageService.getObject("game.gameField-player");
+    this.player = this.localStorageService.getObject("game.gameField-player") || {};
   }
 
   savePlayer() {
+    if (!this.player || !this.player.name) {
+      this.alertService.warning("Player must have a name!");
+      return false;
+    }
     this.player.id = this.player.id || Math.floor(Math.random() * Math.floor(10000000) + 1);
     this.localStorageService.setObject("game.gameField-player", this.player);
+    return true;
   }
 
   getLobbies() {
@@ -82,16 +90,18 @@ export class HomeController {
   }
 
   newLobby() {
-    this.savePlayer();
-    this.$location.path('/' + Math.floor(Math.random() * Math.floor(100000) + 1));
+    if (this.savePlayer()) {
+      this.$location.path('/' + Math.floor(Math.random() * Math.floor(100000) + 1));
+    }
   }
 
   joinLobby(id) {
-    this.savePlayer();
-    this.$location.path('/' + id);
+    if (this.savePlayer()) {
+      this.$location.path('/' + id);
+    }
   }
 
-  deleteLobby(id){
+  deleteLobby(id) {
     return this.hostStorageService.delete("lobbies", id)
       .then(() => {
         this.alertService.message();

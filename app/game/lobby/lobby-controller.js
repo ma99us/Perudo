@@ -19,6 +19,18 @@ export class LobbyController {
   $onDestroy() {
   }
 
+  moveUpPlayers(p) {
+    let pIndex = this.game.playerService.getPlayerIndex(p);
+    let insIndex = this.game.playerService.getPrevPlayerIndex(pIndex);
+    this.game.playerService.updatePlayers(p, insIndex);
+  }
+
+  moveDownPlayers(p) {
+    let pIndex = this.game.playerService.getPlayerIndex(p);
+    let insIndex = this.game.playerService.getNextPlayerIndex(pIndex);
+    this.game.playerService.updatePlayers(p, insIndex);
+  }
+
   startGame(){
     this.game.updateState('GAME');
   }

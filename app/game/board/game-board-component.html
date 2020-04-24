@@ -1,4 +1,4 @@
-<div class="card offset-lg-3 col-lg-6">
+<div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
         <h1>NO-NONSENSE PERUDO</h1>
         (game id: {{$ctrl.game.id}})
@@ -22,12 +22,13 @@
                     <div class="col-1" ng-repeat="d in [].constructor(5) track by $index">
                         <dice size="2" val="$ctrl.getDice(p, $parent.$index, $index)"></dice>
                     </div>
-                    <div class="col-2">
+                    <div class="col-2 text-nowrap">
                         <p ng-show="($ctrl.gameData.gameState === 'ROLLED'
                         || ($ctrl.gameData.gameState === 'REVEALED' && $index !== $ctrl.gameData.playerTurn))
                         && $ctrl.findPlayersData(p).bet">
                             <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
                                 Bet: {{$ctrl.findPlayersData(p).bet.num}} of {{$ctrl.findPlayersData(p).bet.val}}'s
+                                <span ng-show="$ctrl.findPlayersData(p).bet.bot"> (AI)</span>
                             </span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.playerTurn && $ctrl.gameData.gameState === 'REVEALED'">
@@ -106,18 +107,27 @@
             </div>
         </div>
         <div>
+            <!-- DEBUG ONLY! -->
             <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
                     ng-click="$ctrl.finishGame()">
                 Exit Game
             </button>
-            <!-- DEBUG ONLY! -->
             <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugRestGame()">
-                !RESET!
+                    ng-click="$ctrl.debugResetToLastRound()">
+                !LAST ROUND!
             </button>
             <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugEndGame()">
-                !End Game!
+                    ng-click="$ctrl.debugRestartGame()">
+                !RESTART GAME!
+            </button>
+            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
+                    ng-click="$ctrl.debugResetTurn()">
+                !RESET TURN!
+            </button>
+            <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToKick">
+            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
+                    ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
+                !KICK PLAYER!
             </button>
         </div>
     </div>

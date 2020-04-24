@@ -36,6 +36,9 @@ export class GameBotService {
     if (!this.botMode || this.botMode === BotMode.None) {
       return null;
     }
+    if (typeof delay === 'string') {
+      delay = parseInt(delay);
+    }
     else if (this.botMode === BotMode.Ian) {
       delay = Math.ceil(delay / 10);
     }
@@ -106,12 +109,18 @@ export class GameBotService {
       }
       else if (!lastBet   // can't dudo on a first round, bet something
         || (lastBet && lastBet.num <= selfLastBetNum) // can't dudo if we have all the last bet dice, bet something
-        || (maxVal > 1 && minValNum < totalDiceNum && (minValNum < avgNum * 1.3 || maxValNum > avgNum * 0.5))  //TODO: adjust the weights
-        || (maxVal === 1 && minValNum < totalDiceNum && (minValNum < avgNum / 2 * 1.3 || maxValNum > avgNum / 2 * 0.5))
+        || (maxVal > 1 && minValNum < totalDiceNum && (minValNum < avgNum * 1.3 && maxValNum > avgNum * 0.5))  //TODO: adjust the weights
+        || (maxVal === 1 && minValNum < totalDiceNum && (minValNum < avgNum / 2 * 1.3 && maxValNum > avgNum / 2 * 0.5))
       ) {
         return {
           num: minValNum,
           val: maxVal
+        };
+      } else if (selfLastBetNum > avgNum * 0.3)  {
+        // we have some dice last ditch effort: switch to aces
+        return {
+          num: this.perudoFindMinLegalNumForVal(lastBet, 1),
+          val: 1
         };
       } else {
         return null;

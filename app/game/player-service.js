@@ -33,8 +33,12 @@ export class PlayerService {
     return this.player.isHost || this.player.id === player.id;
   }
 
-  findSelfPlayerIndex() {
-    return this.players.findIndex(p => p.id === this.player.id);
+  getSelfPlayerIndex() {
+    return this.getPlayerIndex(this.player);
+  }
+
+  getPlayerIndex(player) {
+    return this.players.findIndex(p => p.id === player.id);
   }
 
   getPlayerByIndex(index){
@@ -62,8 +66,8 @@ export class PlayerService {
     })
   }
 
-  updatePlayers(player) {
-    return this.hostStorageService.update("players", player).then(data => {
+  updatePlayers(player, index = null) {
+    return this.hostStorageService.update("players", player, index).then(data => {
       this.alertService.message();
     }).catch(err => {
       this.alertService.error(err);

@@ -322,14 +322,14 @@ export class GameBoardController {
   }
 
   get selfIndex() {
-    return this.playerService.findSelfPlayerIndex();
+    return this.playerService.getSelfPlayerIndex();
   }
 
   watchdogEndRound(){
     if (this.watchdogER) {
       return;
     }
-    this.watchdogER = this.gameBotService.watchdogCallback(10, (ts) => {
+    this.watchdogER = this.gameBotService.watchdogCallback('8', (ts) => {  // hack to prevent AI to change the value
       // update UI
       this.watchdogERts = ts;
     });
@@ -435,9 +435,9 @@ export class GameBoardController {
         let aiBet = this.gameBotService.perudoBetBot(this.diceInPlay, this.playerData.dice,
           this.findLastBet(), allBets);
         if (aiBet) {
-          this.makeBet(aiBet.num, aiBet.val);
+          this.makeBet(aiBet.num, aiBet.val, true);
         } else {
-          this.callDudo();
+          this.callDudo(true);
         }
       }).catch((err) => {
         this.watchdogBMts = null;
@@ -446,13 +446,14 @@ export class GameBoardController {
     }
   }
 
-  makeBet(num, val) {
+  makeBet(num, val, bot = null) {
     if(this.watchdogMB){
       this.gameBotService.watchdogCancel(this.watchdogMB);
     }
     this.findSelfPlayersData().bet = {
       num: num,
-      val: val
+      val: val,
+      bot: bot
     };
     return this.updatePlayersData(this.makePublicPlayerData())
       .then(() => {
@@ -464,7 +465,7 @@ export class GameBoardController {
       });
   }
 
-  callDudo() {
+  callDudo(bot = null) {
     this.gameData.gameState = GameState.REVEAL;
     this.updateGameData();
   }
@@ -659,7 +660,7 @@ export class GameBoardController {
     this.processGameDataChange();
   }
 
-  debugRestGame() {
+  debugRestartGame() {
     this.alertService.message();
     return this.hostStorageService.delete("playerData-" + this.playerService.player.id)
       .then(() => {
@@ -686,12 +687,38 @@ export class GameBoardController {
       });
   }
 
-  debugEndGame() {
+  debugResetToLastRound() {
     const selfPlayersData = this.findSelfPlayersData();
     selfPlayersData.diceNum = 1;
     selfPlayersData.dice = [];
-    selfPlayersData.state = GameState.DONE;
+    selfPlayersData.state = GameState.ROLL;
     this.updatePlayersData(this.makePublicPlayerData());
+  }
+
+  debugResetTurn(playerTurn = 0){
+    // reset players data
+    this.playersData.forEach(pd => {
+      pd.dice = [];
+      pd.state = GameState.ROLL;
+      pd.bet = null;
+    });
+    this.hostStorageService.set("playersData", this.playersData)
+      .then(data => {
+        this.alertService.message();
+        // reset game data
+        this.gameData.playerTurn = playerTurn;
+        this.gameData.gameState = GameState.ROLL;
+        return this.updateGameData();
+      }).catch(err => {
+        this.alertService.error(err);
+      });
+  }
+
+  debugKickPlayerByName(name){
+    let p = this.playerService.players.find(p => p.name === name);
+    this.playerService.removePlayers(p).then(() =>{
+      this.debugResetTurn(this.gameData.playerTurn);
+    });
   }
 
   // debugRollPlayer(id) {

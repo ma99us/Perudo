@@ -39,10 +39,12 @@ export class HostStorageService {
       this.sendMessage({API_KEY: this.API.HOST_API_KEY});  // got to send API_KEY first thing otherwise socket will be closed
     }).onClose(() => {
       console.log("--- on socket closed");
+      this.onMessage({sessionId: this.sessionId, event: 'CLOSED', message: 'Websocket closed'});
       this.dataStream = null;
       this.sessionId = null;
     }).onError(err => {
       console.log("--- on socket error: " + err);
+      this.onMessage({sessionId: this.sessionId, event: 'ERROR', message: 'Websocket error: ' + err});
     });
   }
 

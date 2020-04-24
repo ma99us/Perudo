@@ -19,6 +19,7 @@ export class GameController {
   $onInit() {
     if (!this.id) {
       console.log("no game id, go Home");
+      this.alertService.warning("Game ID is required to join a game.");
       this.goHome();
       return;
     }
@@ -26,11 +27,12 @@ export class GameController {
     this.playerService.loadPlayer("game.gameField-player");
     if (!this.playerService.isValidPlayer(this.playerService.player)) {
       console.log("no player info, go Home");
+      this.alertService.warning("Player Name is required to join a game.");
       this.goHome();
       return;
     }
 
-    console.log("* Game; game id=" + this.id + ", player: " + this.playerService.player);
+    console.log(`* Game; game id=${this.id}, player: \"${this.playerService.player.name}\" (id: ${this.playerService.player.id})`);
 
     this.mbsDbListener = this.messageBusService.on("db-event", (event, data) => {
       console.log("db-event: " + JSON.stringify(data));
@@ -47,6 +49,8 @@ export class GameController {
         this.onOpened();
       } else if (data.event === 'ERROR') {
         this.alertService.error(data.event.message);
+      } else if (data.event === 'CLOSED') {
+        this.alertService.warning(data.event.message);
       }
     });
     this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
@@ -112,7 +116,7 @@ export class GameController {
   }
 
   checkSelf() {
-    const idx = this.playerService.findSelfPlayerIndex();
+    const idx = this.playerService.getSelfPlayerIndex();
     this.playerService.player.isHost = idx === 0; // player index 0 is always a host
     if (!this.playerService.player.inLobby && idx >= 0) { // was not in game, but now is
       this.playerService.player.inLobby = true;

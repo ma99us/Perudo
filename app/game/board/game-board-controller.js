@@ -71,7 +71,7 @@ export class GameBoardController {
       .then(() => {
         return this.getPlayersData(); // get all players public data
       })
-      .then(() =>{
+      .then(() => {
         this.processGameDataChange();
       })
       .catch((err) => {
@@ -85,13 +85,13 @@ export class GameBoardController {
    */
   processGameDataChange() {
     const selfPlayersData = this.findSelfPlayersData();
-    if(!this.gameData || !this.playerData || !this.playersData || !selfPlayersData){
+    if (!this.gameData || !this.playerData || !this.playersData || !selfPlayersData) {
       return; // not fully initialized yet, do not process state yet.
     }
     console.log("* gameState=" + this.gameData.gameState);
 
-    if(this.gameData.gameState === GameState.ROLL){
-      if(selfPlayersData.state !== GameState.ROLL && selfPlayersData.state !== GameState.ROLLED){
+    if (this.gameData.gameState === GameState.ROLL) {
+      if (selfPlayersData.state !== GameState.ROLL && selfPlayersData.state !== GameState.ROLLED) {
         // reset previous round player data
         this.playerData.dice = [];
         return this.updatePlayerData().then(() => {
@@ -101,35 +101,35 @@ export class GameBoardController {
           if (selfPlayersData.diceNum > 0) {
             return this.updatePlayersData(this.makePublicPlayerData());
           } else {
-            return this.rollDice(); // just continue to the next state
+            return this.rollDice(); // just continue to the next state even if we have no dice
           }
         });
       }
-      if(this.isHost && this.gameData.winner){
+      if (this.isHost && this.gameData.winner) {
         // this game is Over. Show Score screen.
         return this.finishGame();
       }
       let winner = this.checkForWinnerPlayer();
-      if(this.isHost && winner && !this.gameData.winner){
-        // set the Winner and and switch to END state
+      if (this.isHost && winner && !this.gameData.winner) {
+        // set the Winner
         this.gameData.winner = winner;
         this.gameData.winnerDiceLeft = this.findPlayersData(winner).diceNum;
-        //this.gameData.gameState = GameState.END;
         return this.updateGameData();
       }
-      if(this.isHost && this.checkAllPlayersRolled()){
+      if (this.isHost && this.checkAllPlayersRolled()) {
         // switch to next game state
         this.gameData.gameState = GameState.ROLLED;
         return this.updateGameData();
       }
       //each player has to call this.rollDice();
-      if(this.canRoll){
+      if (this.canRoll) {
         this.watchdogRollDice();
       }
-    } else if(this.gameData.gameState === GameState.ROLLED) {
+    } else if (this.gameData.gameState === GameState.ROLLED) {
+      console.log("* gameState=ROLLED: selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
       if (this.isSelfTurn && selfPlayersData.state !== GameState.TURN) {
         selfPlayersData.state = GameState.TURN; // check if that is our turn to make a decision
-        this.updatePlayersData(this.makePublicPlayerData());
+        return this.updatePlayersData(this.makePublicPlayerData());
       }
       // wait for the player betting turns to end
       // players whos turn must call this.bet() or this.dudo()
@@ -137,33 +137,36 @@ export class GameBoardController {
         this.watchdogMakeBet();
       }
     } else if (this.gameData.gameState === GameState.REVEAL) {
+      console.log("* gameState=REVEAL: selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
       if (selfPlayersData.state !== GameState.REVEALED) {
         selfPlayersData.state = GameState.REVEALED;
-        this.updatePlayersData(this.makePublicPlayerData(false)); // reveal each player dice
+        return this.updatePlayersData(this.makePublicPlayerData(false)); // reveal each player dice
       } else if (this.isHost && this.checkAllPlayersRevealed()) {
         // switch to next game state
         this.gameData.gameState = GameState.REVEALED;
-        this.updateGameData();
+        return this.updateGameData();
       }
       // no player interaction, just send all rolled dice numbers as public players data
     } else if (this.gameData.gameState === GameState.REVEALED) {
+      console.log("* gameState=REVEALED: selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
       if (selfPlayersData.state !== GameState.DONE) {
         let prevPlayerIndex = this.findPrevGoodPlayerIndex(this.gameData.playerTurn);
         if (this.selfIndex === prevPlayerIndex) {
           // we were just dudoed against
-          if(this.checkDudo() === true){
+          if (this.checkDudo() === true) {
             // Oh, no! dudo was good, we lost a dice
             return this.loseDice();
           }
-        } else if(this.selfIndex === this.gameData.playerTurn) {
+        } else if (this.selfIndex === this.gameData.playerTurn) {
           // we just dodoed someone
-          if(this.checkDudo() === false){
+          if (this.checkDudo() === false) {
             // Oh, no! dudo was bad, we lost a dice
             return this.loseDice();
           }
         }
         // Oof. we were out of the decision or were lucky this turn
         selfPlayersData.state = GameState.DONE;
+        console.log("* selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
         return this.updatePlayersData(this.makePublicPlayerData(false));
       }
       // turn player (or timer) should switch to the next game state 'ROLL'
@@ -187,7 +190,7 @@ export class GameBoardController {
 
   checkForWinnerPlayer() {
     let data = this.playersData.filter(d => d.diceNum > 0);
-    if(data.length !== 1 || this.playersData.length !== this.playerService.players.length){
+    if (data.length !== 1 || this.playersData.length !== this.playerService.players.length) {
       return null;
     }
     return this.playerService.getPlayerById(data[0].id);
@@ -212,7 +215,7 @@ export class GameBoardController {
 
   findLastBet() {
     let prevPlayerIndex = this.findPrevGoodPlayerIndex(this.gameData.playerTurn);
-    if(prevPlayerIndex == null){
+    if (prevPlayerIndex == null) {
       return null;
     }
     let prevPlayer = this.playerService.getPlayerByIndex(prevPlayerIndex);
@@ -220,7 +223,7 @@ export class GameBoardController {
     return prevPlayerData ? prevPlayerData.bet : null;
   }
 
-  isLastBetPlayerIndex(index){
+  isLastBetPlayerIndex(index) {
     return this.gameData && index === this.findPrevGoodPlayerIndex(this.gameData.playerTurn);
   }
 
@@ -247,7 +250,7 @@ export class GameBoardController {
   }
 
   validateBet(num, val) {
-    if(!num || !val){
+    if (!num || !val) {
       return false;
     }
     const bet = this.findLastBet(); // first turn of the round
@@ -280,7 +283,7 @@ export class GameBoardController {
 
   getDice(player, pIndex, dIndex) {
     const playerData = player.id === this.playerService.player.id ? this.playerData : this.findPlayersData(player);
-    if(!playerData){
+    if (!playerData) {
       return null;
     }
     let val = (playerData && dIndex < playerData.dice.length) ? playerData.dice[dIndex] : null;
@@ -325,16 +328,18 @@ export class GameBoardController {
     return this.playerService.getSelfPlayerIndex();
   }
 
-  watchdogEndRound(){
+  watchdogEndRound() {
     if (this.watchdogER) {
       return;
     }
+    console.log("* watchdogEndRound;");    // #DEBUG
     this.watchdogER = this.gameBotService.watchdogCallback('8', (ts) => {  // hack to prevent AI to change the value
       // update UI
       this.watchdogERts = ts;
     });
-    if(this.watchdogER){
+    if (this.watchdogER) {
       this.watchdogER.then(() => {
+        this.watchdogERts = null;
         this.watchdogER = null;
         this.endRound();
       }).catch((err) => {
@@ -345,7 +350,7 @@ export class GameBoardController {
   }
 
   endRound() {
-    if(this.watchdogER){
+    if (this.watchdogER) {
       this.gameBotService.watchdogCancel(this.watchdogER);
     }
     // advance player turn
@@ -362,16 +367,18 @@ export class GameBoardController {
     this.updateGameData();
   }
 
-  watchdogRollDice(){
+  watchdogRollDice() {
     if (this.watchdogRD) {
       return;
     }
+    console.log("* watchdogRollDice;");    // #DEBUG
     this.watchdogRD = this.gameBotService.watchdogCallback(5, (ts) => {
       // update UI
       this.watchdogRDts = ts;
     });
     if (this.watchdogRD) {
       this.watchdogRD.then(() => {
+        this.watchdogRDts = null;
         this.watchdogRD = null;
         this.rollDice();
       }).catch((err) => {
@@ -383,21 +390,23 @@ export class GameBoardController {
   }
 
   rollDice() {
-    if(this.watchdogRD){
+    if (this.watchdogRD) {
       this.gameBotService.watchdogCancel(this.watchdogRD);
     }
+    const selfPlayersData = this.findSelfPlayersData();
     this.playerData.dice = [];
-    for (let i = 0; i < this.findSelfPlayersData().diceNum; i++) {
+    for (let i = 0; i < selfPlayersData.diceNum; i++) {
       this.playerData.dice.push(Math.floor(Math.random() * 6 + 1))
     }
     this.updatePlayerData().finally(() => {
-      this.findSelfPlayersData().state = GameState.ROLLED;
+      selfPlayersData.state = GameState.ROLLED;
+      selfPlayersData.bet = null;
       this.updatePlayersData(this.makePublicPlayerData());
     });
   }
 
   loseDice() {
-    console.log("Oh no! We lost a dice!");
+    console.log("Oh no! We lost a dice!");  // #DEBUG
     const selfPlayersData = this.findSelfPlayersData();
     if (selfPlayersData.diceNum > 0) {
       selfPlayersData.diceNum--;
@@ -411,7 +420,7 @@ export class GameBoardController {
         this.gameData.prompt = `Bet ${this.dudo.bet_num} of ${this.dudo.bet_val}'s, revealed: ${this.dudo.total}.` +
           ` \"${this.playerService.player.name}\" loses a dice :-(`;
         // find next player index turn
-        if(selfPlayersData.diceNum > 0){
+        if (selfPlayersData.diceNum > 0) {
           this.gameData.nextPlayerTurn = this.selfIndex;
         } else {
           this.gameData.nextPlayerTurn = this.findNextGoodPlayerIndex(this.selfIndex);
@@ -420,16 +429,18 @@ export class GameBoardController {
       });
   }
 
-  watchdogMakeBet(){
+  watchdogMakeBet() {
     if (this.watchdogMB) {
       return;
     }
+    console.log("* watchdogMakeBet;");    // #DEBUG
     this.watchdogMB = this.gameBotService.watchdogCallback(20, (ts) => {
       // update UI
       this.watchdogBMts = ts;
     });
-    if(this.watchdogMB){
+    if (this.watchdogMB) {
       this.watchdogMB.then(() => {
+        this.watchdogBMts = null;
         this.watchdogMB = null;
         let allBets = this.playersData.filter(pd => pd.bet).map(pd => pd.bet);
         let aiBet = this.gameBotService.perudoBetBot(this.diceInPlay, this.playerData.dice,
@@ -447,7 +458,7 @@ export class GameBoardController {
   }
 
   makeBet(num, val, bot = null) {
-    if(this.watchdogMB){
+    if (this.watchdogMB) {
       this.gameBotService.watchdogCancel(this.watchdogMB);
     }
     this.findSelfPlayersData().bet = {
@@ -470,7 +481,8 @@ export class GameBoardController {
     this.updateGameData();
   }
 
-  checkDudo(){
+  checkDudo() {
+    console.log("* checkDudo;");  // #DEBUG
     const bet = this.findLastBet();
     if (!bet) {
       return null;
@@ -489,31 +501,31 @@ export class GameBoardController {
     return total < bet.num;
   }
 
-  findPrevGoodPlayerIndex(index){
+  findPrevGoodPlayerIndex(index) {
     let idx = index;
     let playerData = null;
-    do{
+    do {
       idx = this.playerService.getPrevPlayerIndex(idx);
       let player = this.playerService.getPlayerByIndex(idx);
       playerData = this.findPlayersData(player);
       if (!playerData) {
         return null;
       }
-    }while(playerData.diceNum === 0 && idx !== index);
+    } while (playerData.diceNum === 0 && idx !== index);
     return idx !== index ? idx : null;
   }
 
-  findNextGoodPlayerIndex(index){
+  findNextGoodPlayerIndex(index) {
     let idx = index;
     let playerData = null;
-    do{
+    do {
       idx = this.playerService.getNextPlayerIndex(idx);
       let player = this.playerService.getPlayerByIndex(idx);
       playerData = this.findPlayersData(player);
       if (!playerData) {
         return null;
       }
-    }while(playerData.diceNum === 0 && idx !== index);
+    } while (playerData.diceNum === 0 && idx !== index);
     return idx !== index ? idx : null;
   }
 
@@ -521,20 +533,21 @@ export class GameBoardController {
 
   getGameData() {
     return this.hostStorageService.get("gameData").then(data => {
-        this.alertService.message();
-        this.gameData = data;
-        if(!this.gameData){
-          this.gameData = {
-            gameState: GameState.ROLL,  // no game state yet, assume first round ROLL
-            playerTurn: 0,
-            lastRoundLength: 0,
-            totalRounds: 0
-          };
-          if(this.isHost){
-            return this.updateGameData(this.gameData);
-          }
+      this.alertService.message();
+      this.gameData = data;
+      console.log("* getGameData; gameData{} replaced");   // #DEBUG
+      if (!this.gameData) {
+        this.gameData = {
+          gameState: GameState.ROLL,  // no game state yet, assume first round ROLL
+          playerTurn: 0,
+          lastRoundLength: 0,
+          totalRounds: 0
+        };
+        if (this.isHost) {
+          return this.updateGameData(this.gameData);
         }
-      })
+      }
+    })
       .catch(err => {
         this.alertService.error(err);
       })
@@ -554,9 +567,9 @@ export class GameBoardController {
     return this.hostStorageService.get(".playerData-" + this.playerService.player.id).then(data => {
       this.alertService.message();
       this.playerData = data;
-      if(!this.playerData){
+      if (!this.playerData) {
         this.playerData = {
-          dice: [], // only actual dice rolls are storred in personal player data, no states!
+          dice: [], // only actual dice rolls are stored in personal player data, no states!
         };
         return this.updatePlayerData();
       } else {
@@ -590,14 +603,14 @@ export class GameBoardController {
     return data;
   }
 
-  findPlayersData(player){
-    if(!player){
+  findPlayersData(player) {
+    if (!player) {
       return null;
     }
     return this.playersData.find((p) => p.id === player.id);
   }
 
-  findSelfPlayersData(){
+  findSelfPlayersData() {
     return this.findPlayersData(this.playerService.player);
   }
 
@@ -605,10 +618,11 @@ export class GameBoardController {
     return this.hostStorageService.get("playersData").then(data => {
       this.alertService.message();
       this.playersData = ((!Array.isArray(data) && data !== null) ? [data] : data) || []; // should always be an array
-      let selfPlayer = this.findPlayersData(this.playerService.player);
-      if(!selfPlayer){
+      console.log("* getPlayersData; playersData[] replaced");   // #DEBUG
+      let selfPlayer = this.findSelfPlayersData();
+      if (!selfPlayer) {
         // probably the first round, setup the player initial state
-        console.log("-- init self player data; isSpectator=" + this.playerService.isSpectator());
+        console.log("-- init self player data; isSpectator=" + this.playerService.isSpectator());   // #DEBUG
         const player = {
           diceNum: !this.playerService.isSpectator() ? 5 : 0, // no dice for spectators
           dice: [],
@@ -638,16 +652,16 @@ export class GameBoardController {
     return GameState;
   }
 
-  updateBotMode(mode){
-    if(this.watchdogRD){
+  updateBotMode(mode) {
+    if (this.watchdogRD) {
       this.gameBotService.watchdogCancel(this.watchdogRD);
       this.watchdogRD = null;
     }
-    if(this.watchdogMB){
+    if (this.watchdogMB) {
       this.gameBotService.watchdogCancel(this.watchdogMB);
       this.watchdogMB = null;
     }
-    if(this.watchdogER){
+    if (this.watchdogER) {
       this.gameBotService.watchdogCancel(this.watchdogER);
       this.watchdogER = null;
     }
@@ -695,7 +709,7 @@ export class GameBoardController {
     this.updatePlayersData(this.makePublicPlayerData());
   }
 
-  debugResetTurn(playerTurn = 0){
+  debugResetTurn(playerTurn = 0) {
     // reset players data
     this.playersData.forEach(pd => {
       pd.dice = [];
@@ -710,13 +724,13 @@ export class GameBoardController {
         this.gameData.gameState = GameState.ROLL;
         return this.updateGameData();
       }).catch(err => {
-        this.alertService.error(err);
-      });
+      this.alertService.error(err);
+    });
   }
 
-  debugKickPlayerByName(name){
+  debugKickPlayerByName(name) {
     let p = this.playerService.players.find(p => p.name === name);
-    this.playerService.removePlayers(p).then(() =>{
+    this.playerService.removePlayers(p).then(() => {
       this.debugResetTurn(this.gameData.playerTurn);
     });
   }

@@ -106,27 +106,27 @@
                 </button>
             </div>
         </div>
-        <div>
+        <div ng-if="$ctrl.playerService.player.name.indexOf('Red Dragon') >=0" class="bg-warning">
             <!-- DEBUG ONLY! -->
-            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.finishGame()">
-                Exit Game
+            <h6>*** DEBUG CONSOLE ***</h6>
+            <p>Game id: {{$ctrl.game.id}}</p>
+            <p>Player: "{{$ctrl.playerService.player.name}}", id: {{$ctrl.playerService.player.id}}</p>
+            <p>Game state: {{$ctrl.gameData.gameState}}, Player state: {{$ctrl.findSelfPlayersData().state}}</p>
+            <button ng-click="$ctrl.finishGame()">
+                !EXIT GAME!
             </button>
-            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugResetToLastRound()">
+            <button ng-click="$ctrl.debugResetToLastRound()">
                 !LAST ROUND!
             </button>
-            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugRestartGame()">
+            <button ng-click="$ctrl.debugRestartGame()">
                 !RESTART GAME!
-            </button>
-            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugResetTurn()">
+            </button><br/>
+            <input type="number" min="0" ng-model="$ctrl.debugResetTurnNum" style="width: 4em;">
+            <button ng-click="$ctrl.debugResetTurn($ctrl.debugResetTurnNum)">
                 !RESET TURN!
-            </button>
+            </button><br/>
             <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToKick">
-            <button ng-if="$ctrl.playerService.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
+            <button ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
                 !KICK PLAYER!
             </button>
         </div>

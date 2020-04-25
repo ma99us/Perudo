@@ -116,7 +116,7 @@ export class GameBotService {
           num: minValNum,
           val: maxVal
         };
-      } else if (selfLastBetNum > avgNum * 0.3)  {
+      } else if (minValNum < totalDiceNum && selfLastBetNum > avgNum * 0.3)  {
         // we have some dice last ditch effort: switch to aces
         return {
           num: this.perudoFindMinLegalNumForVal(lastBet, 1),

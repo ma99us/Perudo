@@ -1,0 +1,15 @@
+<div class="card offset-xl-3 col-xl-6">
+    <div class="card-body container">
+        <div id="messages" class="vertical-scroll">
+            <p ng-repeat="m in $ctrl.messages track by $index">
+                <span style="color:{{m.color}}">"{{m.name}}"</span>
+                {{m.message}}
+            </p>
+        </div>
+        <div>
+            <input id="say" type="text" size="40" placeholder="say something" ng-model="$ctrl.txt"
+                   ng-keypress="$ctrl.sendOnEnterKey($event, $ctrl.txt)">
+            <button ng-disabled="!$ctrl.hostStorageService.sessionId" ng-click="$ctrl.sendMessage($ctrl.txt)">Send</button>
+        </div>
+    </div>
+</div>

@@ -2,4 +2,5 @@
     <lobby ng-if="$ctrl.state === 'LOBBY'"></lobby>
     <board ng-if="$ctrl.state === 'GAME'"></board>
     <score ng-if="$ctrl.state === 'FINISHED'"></score>
+    <chat player="$ctrl.playerService.player" chat-name="game"></chat>
 </div>

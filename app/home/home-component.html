@@ -46,11 +46,14 @@
             </div>
         </div>
         <div class="card-footer text-center">
-            <!-- DEBUG ONLY! -->
-            <button ng-if="$ctrl.player.name.startsWith('Mike ')"
-                    ng-click="$ctrl.debugDeleteAllLobbies()">
-                !DELETE ALL!
-            </button>
+            <div ng-if="$ctrl.player.name.indexOf('Red Dragon') >=0" class="bg-warning">
+                <h6>*** DEBUG CONSOLE ***</h6>
+                <p>Player: "{{$ctrl.player.name}}", id: {{$ctrl.player.id}}</p>
+                <button ng-click="$ctrl.debugDeleteAllLobbies()">
+                    !DELETE ALL LOBBIES!
+                </button>
+            </div>
         </div>
     </div>
+    <chat player="$ctrl.player" chat-name="general"></chat>
 </div>

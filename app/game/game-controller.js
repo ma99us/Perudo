@@ -53,9 +53,9 @@ export class GameController {
         this.alertService.warning(data.event.message);
       }
     });
-    this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
-      console.log("session-message: " + data);
-    });
+    // this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
+    //   console.log("session-message: " + data);
+    // });
 
     this.API.setDbName(this.API.HOST_DB_NAME + this.id);
     this.alertService.warning("Entering game...");
@@ -71,9 +71,9 @@ export class GameController {
     if(this.mbsEventsListener){
       this.mbsEventsListener();
     }
-    if(this.mbsMessagesListener){
-      this.mbsMessagesListener();
-    }
+    // if(this.mbsMessagesListener){
+    //   this.mbsMessagesListener();
+    // }
 
     this.unregisterLobby();
     this.playerService.unloadPlayer();
@@ -91,6 +91,7 @@ export class GameController {
       .then(() => {
         if (!this.playerService.player.inLobby) {
           this.playerService.player.spectator = !(!this.state || this.state === 'LOBBY');
+          this.playerService.player.sessionId = this.hostStorageService.sessionId;
           return this.playerService.updatePlayers(this.playerService.player);
         }
       })
@@ -116,7 +117,7 @@ export class GameController {
   }
 
   checkSelf() {
-    const idx = this.playerService.getSelfPlayerIndex();
+    const idx = this.playerService.selfPlayerIndex;
     this.playerService.player.isHost = idx === 0; // player index 0 is always a host
     if (!this.playerService.player.inLobby && idx >= 0) { // was not in game, but now is
       this.playerService.player.inLobby = true;

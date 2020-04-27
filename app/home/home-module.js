@@ -8,6 +8,7 @@ import {MessageBusService} from "../services/message-bus-service.js";
 
 // import app components
 import {HomeComponent} from "./home-component.js";
+import {ChatComponent} from "../chat/chat-component.js";
 
 // directives
 import {HomeLobbyDirective} from "./home-lobby/home-lobby-directive.js";
@@ -19,5 +20,6 @@ export const HomeModule = angular
   .service('HostStorageService', HostStorageService)
   .service('MessageBusService', MessageBusService)
   .component('home', HomeComponent)
+  .component('chat', ChatComponent)
   .directive('homeLobby', HomeLobbyDirective)
   .name;

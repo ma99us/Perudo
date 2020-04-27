@@ -64,12 +64,12 @@ export class GameBoardController {
   }
 
   onOpened() {
-    this.getPlayerData()  // restore self personal data if any
+    this.getPlayersData()   // get all players public data
       .then(() => {
-        return this.getGameData();  // get global game state and adata
+        return this.getPlayerData();  // restore self personal data if any
       })
       .then(() => {
-        return this.getPlayersData(); // get all players public data
+        return this.getGameData();    // get global game state and data
       })
       .then(() => {
         this.processGameDataChange();
@@ -84,21 +84,20 @@ export class GameBoardController {
    * @param newState
    */
   processGameDataChange() {
-    const selfPlayersData = this.findSelfPlayersData();
-    if (!this.gameData || !this.playerData || !this.playersData || !selfPlayersData) {
+    if (!this.gameData || !this.playerData || !this.playersData) {
       return; // not fully initialized yet, do not process state yet.
     }
     console.log("* gameState=" + this.gameData.gameState);
 
     if (this.gameData.gameState === GameState.ROLL) {
-      if (selfPlayersData.state !== GameState.ROLL && selfPlayersData.state !== GameState.ROLLED) {
+      if (this.playerData.state !== GameState.ROLL && this.playerData.state !== GameState.ROLLED) {
         // reset previous round player data
         this.playerData.dice = [];
         return this.updatePlayerData().then(() => {
-          selfPlayersData.bet = null;
-          selfPlayersData.dice = [];
-          selfPlayersData.state = GameState.ROLL;
-          if (selfPlayersData.diceNum > 0) {
+          this.playerData.bet = null;
+          this.playerData.dice = [];
+          this.playerData.state = GameState.ROLL;
+          if (this.playerData.diceNum > 0) {
             return this.updatePlayersData(this.makePublicPlayerData());
           } else {
             return this.rollDice(); // just continue to the next state even if we have no dice
@@ -126,9 +125,9 @@ export class GameBoardController {
         this.watchdogRollDice();
       }
     } else if (this.gameData.gameState === GameState.ROLLED) {
-      console.log("* gameState=ROLLED: selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
-      if (this.isSelfTurn && selfPlayersData.state !== GameState.TURN) {
-        selfPlayersData.state = GameState.TURN; // check if that is our turn to make a decision
+      console.log("* gameState=ROLLED: this.playerData.state=" + this.playerData.state);    // #DEBUG
+      if (this.isSelfTurn && this.playerData.state !== GameState.TURN) {
+        this.playerData.state = GameState.TURN; // check if that is our turn to make a decision
         return this.updatePlayersData(this.makePublicPlayerData());
       }
       // wait for the player betting turns to end
@@ -137,9 +136,9 @@ export class GameBoardController {
         this.watchdogMakeBet();
       }
     } else if (this.gameData.gameState === GameState.REVEAL) {
-      console.log("* gameState=REVEAL: selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
-      if (selfPlayersData.state !== GameState.REVEALED) {
-        selfPlayersData.state = GameState.REVEALED;
+      console.log("* gameState=REVEAL: this.playerData.state=" + this.playerData.state);    // #DEBUG
+      if (this.playerData.state !== GameState.REVEALED) {
+        this.playerData.state = GameState.REVEALED;
         return this.updatePlayersData(this.makePublicPlayerData(false)); // reveal each player dice
       } else if (this.isHost && this.checkAllPlayersRevealed()) {
         // switch to next game state
@@ -148,8 +147,8 @@ export class GameBoardController {
       }
       // no player interaction, just send all rolled dice numbers as public players data
     } else if (this.gameData.gameState === GameState.REVEALED) {
-      console.log("* gameState=REVEALED: selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
-      if (selfPlayersData.state !== GameState.DONE) {
+      console.log("* gameState=REVEALED: this.playerData.state=" + this.playerData.state);    // #DEBUG
+      if (this.playerData.state !== GameState.DONE) {
         let prevPlayerIndex = this.findPrevGoodPlayerIndex(this.gameData.playerTurn);
         if (this.selfIndex === prevPlayerIndex) {
           // we were just dudoed against
@@ -165,8 +164,8 @@ export class GameBoardController {
           }
         }
         // Oof. we were out of the decision or were lucky this turn
-        selfPlayersData.state = GameState.DONE;
-        console.log("* selfPlayersData.state=" + selfPlayersData.state);    // #DEBUG
+        this.playerData.state = GameState.DONE;
+        console.log("* this.playerData.state=" + this.playerData.state);    // #DEBUG
         return this.updatePlayersData(this.makePublicPlayerData(false));
       }
       // turn player (or timer) should switch to the next game state 'ROLL'
@@ -197,8 +196,7 @@ export class GameBoardController {
   }
 
   get canRoll() {
-    const selfPlayersData = this.findSelfPlayersData();
-    return selfPlayersData && selfPlayersData.state !== GameState.ROLLED && selfPlayersData.diceNum > 0;
+    return this.playerData && this.playerData.state !== GameState.ROLLED && this.playerData.diceNum > 0;
   }
 
   get isSelfTurn() {
@@ -325,7 +323,7 @@ export class GameBoardController {
   }
 
   get selfIndex() {
-    return this.playerService.getSelfPlayerIndex();
+    return this.playerService.selfPlayerIndex;
   }
 
   watchdogEndRound() {
@@ -393,25 +391,23 @@ export class GameBoardController {
     if (this.watchdogRD) {
       this.gameBotService.watchdogCancel(this.watchdogRD);
     }
-    const selfPlayersData = this.findSelfPlayersData();
     this.playerData.dice = [];
-    for (let i = 0; i < selfPlayersData.diceNum; i++) {
+    for (let i = 0; i < this.playerData.diceNum; i++) {
       this.playerData.dice.push(Math.floor(Math.random() * 6 + 1))
     }
     this.updatePlayerData().finally(() => {
-      selfPlayersData.state = GameState.ROLLED;
-      selfPlayersData.bet = null;
+      this.playerData.state = GameState.ROLLED;
+      this.playerData.bet = null;
       this.updatePlayersData(this.makePublicPlayerData());
     });
   }
 
   loseDice() {
     console.log("Oh no! We lost a dice!");  // #DEBUG
-    const selfPlayersData = this.findSelfPlayersData();
-    if (selfPlayersData.diceNum > 0) {
-      selfPlayersData.diceNum--;
+    if (this.playerData.diceNum > 0) {
+      this.playerData.diceNum--;
     }
-    selfPlayersData.state = GameState.DONE;  // done with this round
+    this.playerData.state = GameState.DONE;  // done with this round
     return this.updatePlayersData(this.makePublicPlayerData(false))
       .then(() => {
         this.gameData.lastBet = {num: this.dudo.bet_num, val: this.dudo.bet_val};
@@ -420,7 +416,7 @@ export class GameBoardController {
         this.gameData.prompt = `Bet ${this.dudo.bet_num} of ${this.dudo.bet_val}'s, revealed: ${this.dudo.total}.` +
           ` \"${this.playerService.player.name}\" loses a dice :-(`;
         // find next player index turn
-        if (selfPlayersData.diceNum > 0) {
+        if (this.playerData.diceNum > 0) {
           this.gameData.nextPlayerTurn = this.selfIndex;
         } else {
           this.gameData.nextPlayerTurn = this.findNextGoodPlayerIndex(this.selfIndex);
@@ -461,7 +457,7 @@ export class GameBoardController {
     if (this.watchdogMB) {
       this.gameBotService.watchdogCancel(this.watchdogMB);
     }
-    this.findSelfPlayersData().bet = {
+    this.playerData.bet = {
       num: num,
       val: val,
       bot: bot
@@ -554,7 +550,7 @@ export class GameBoardController {
   }
 
   updateGameData() {
-    return this.hostStorageService.update("gameData", this.gameData).then(data => {
+    return this.hostStorageService.set("gameData", this.gameData).then(data => {
       this.alertService.message();
     }).catch(err => {
       this.alertService.error(err);
@@ -566,24 +562,21 @@ export class GameBoardController {
   getPlayerData() {
     return this.hostStorageService.get(".playerData-" + this.playerService.player.id).then(data => {
       this.alertService.message();
-      this.playerData = data;
-      if (!this.playerData) {
-        this.playerData = {
-          dice: [], // only actual dice rolls are stored in personal player data, no states!
-        };
-        return this.updatePlayerData();
-      } else {
-        this.gameBotService.botMode = this.playerData.botMode || this.gameBotService.botMode;
-        this.bet = this.playerData.bet || {};  // temp values for UI controls //FIXME: is that still needed?
-      }
+      this.playerData.dice = data.dice || [];
+      this.gameBotService.botMode = this.playerService.player.isBot ? this.gameBotService.BotMode.Ian : this.gameBotService.botMode;
+      this.gameBotService.botMode = data.botMode || this.gameBotService.botMode;
     }).catch(err => {
       this.alertService.error(err);
     })
   }
 
   updatePlayerData() {
-    this.playerData.id = this.playerService.player.id;
-    return this.hostStorageService.update(".playerData-" + this.playerService.player.id, this.playerData).then(data => {
+    const playerData = {
+      id: this.playerService.player.id,
+      dice: [...this.playerData.dice],  // store only dice
+      botMode: this.gameBotService.botMode
+    };
+    return this.hostStorageService.update(".playerData-" + this.playerService.player.id, playerData).then(data => {
       this.alertService.message();
     }).catch(err => {
       this.alertService.error(err);
@@ -593,8 +586,7 @@ export class GameBoardController {
   /** PUBLIC PLAYERS DATA **/
 
   makePublicPlayerData(excludeDice = true) {
-    const data = Object.assign({}, this.findSelfPlayersData());
-    data.dice = [...this.playerData.dice];
+    const data = Object.assign({}, this.playerData);
     if (excludeDice) {
       data.dice = data.dice.map((d) => {
         return '?'
@@ -610,25 +602,27 @@ export class GameBoardController {
     return this.playersData.find((p) => p.id === player.id);
   }
 
-  findSelfPlayersData() {
-    return this.findPlayersData(this.playerService.player);
-  }
-
   getPlayersData() {
     return this.hostStorageService.get("playersData").then(data => {
       this.alertService.message();
       this.playersData = ((!Array.isArray(data) && data !== null) ? [data] : data) || []; // should always be an array
       console.log("* getPlayersData; playersData[] replaced");   // #DEBUG
-      let selfPlayer = this.findSelfPlayersData();
-      if (!selfPlayer) {
+      let selfPlayerData = this.findPlayersData(this.playerService.player);
+      if(!this.playerData && selfPlayerData){
+        this.playerData = selfPlayerData;
+      }
+      else if (this.playerData && !selfPlayerData) {
+        return this.updatePlayersData(this.makePublicPlayerData());
+      }
+      else if(!this.playerData && !selfPlayerData) {
         // probably the first round, setup the player initial state
-        console.log("-- init self player data; isSpectator=" + this.playerService.isSpectator());   // #DEBUG
-        const player = {
-          diceNum: !this.playerService.isSpectator() ? 5 : 0, // no dice for spectators
+        console.log("-- init self player data; isSpectator=" + this.playerService.isSpectator);   // #DEBUG
+        this.playerData = {
+          diceNum: !this.playerService.isSpectator ? 5 : 0, // no dice for spectators
           dice: [],
           state: GameState.ROLL
         };
-        return this.updatePlayersData(player);
+        return this.updatePlayersData(this.makePublicPlayerData());
       }
     }).catch(err => {
       this.alertService.error(err);
@@ -685,13 +679,13 @@ export class GameBoardController {
       })
       // now re-init everything
       .then(() => {
+        return this.getPlayersData(); // get all players public data
+      })
+      .then(() => {
         return this.getPlayerData();  // restore self personal data if any
       })
       .then(() => {
         return this.getGameData();  // get global game state and adata
-      })
-      .then(() => {
-        return this.getPlayersData(); // get all players public data
       })
       .catch(err => {
         this.alertService.error(err);
@@ -702,10 +696,9 @@ export class GameBoardController {
   }
 
   debugResetToLastRound() {
-    const selfPlayersData = this.findSelfPlayersData();
-    selfPlayersData.diceNum = 1;
-    selfPlayersData.dice = [];
-    selfPlayersData.state = GameState.ROLL;
+    this.playerData.diceNum = 1;
+    this.playerData.dice = [];
+    this.playerData.state = GameState.ROLL;
     this.updatePlayersData(this.makePublicPlayerData());
   }
 

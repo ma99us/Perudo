@@ -21,8 +21,12 @@ export class PlayerService {
     this.isReady = false;
   }
 
-  isSpectator() {
+  get isSpectator() {
     return this.player && this.player.spectator;
+  }
+
+  get isBot() {
+    return this.player && this.player.bot;
   }
 
   isValidPlayer(player) {
@@ -33,7 +37,7 @@ export class PlayerService {
     return this.player.isHost || this.player.id === player.id;
   }
 
-  getSelfPlayerIndex() {
+  get selfPlayerIndex() {
     return this.getPlayerIndex(this.player);
   }
 
@@ -47,6 +51,10 @@ export class PlayerService {
 
   getPlayerById(id){
     return this.players.find(p => p.id === id);
+  }
+
+  getPlayerBySessionId(sessionId){
+    return this.players.find(p => p.sessionId === sessionId);
   }
 
   getPrevPlayerIndex(index) {

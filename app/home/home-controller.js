@@ -34,9 +34,9 @@ export class HomeController {
         this.alertService.warning(data.event.message);
       }
     });
-    this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
-      console.log("session-message: " + data);
-    });
+    // this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
+    //   console.log("session-message: " + data);
+    // });
 
     this.API.setDbName(); // no game id, use API.HOST_DB_NAME by default
     this.alertService.warning("Loading Home...");
@@ -54,15 +54,15 @@ export class HomeController {
     if (this.mbsEventsListener) {
       this.mbsEventsListener();
     }
-    if (this.mbsMessagesListener) {
-      this.mbsMessagesListener();
-    }
+    // if (this.mbsMessagesListener) {
+    //   this.mbsMessagesListener();
+    // }
   }
 
   onOpened() {
     this.getLobbies()
       .finally(() => {
-        this.alertService.message();
+        //this.alertService.message();
       });
   }
 

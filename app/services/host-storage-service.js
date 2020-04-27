@@ -77,6 +77,7 @@ export class HostStorageService {
   onMessage(message) {
     let event = HostStorageService.tryJson(message);
     if (!event || typeof event !== "object") {
+      //we got some primitive, not an object.
       console.log(message);
       this.notify('session-message', message);
       return;
@@ -95,10 +96,14 @@ export class HostStorageService {
     } else if (event.event === 'ERROR') {
       console.log("-- session error: " + event.message);
       this.notify('session-event', event);
-    } else/* if (this.sessionId !== event.sessionId)*/ {  // do not ignore our own updates
+    } else if(event.event /*&& this.sessionId !== event.sessionId*/) {  // do not ignore our own updates
       //console.log(message);
       console.log("-- DB event " + event.event + " for key=" + event.key + " from session id: " + event.sessionId);
       this.notify('db-event', event);
+    } else {
+      //we got some object but it is not an event.
+      console.log(message);
+      this.notify('session-message', event);
     }
   }
 

@@ -30,7 +30,11 @@ export function LobbyPlayerDirective() {
 
       this.isMuted = function() {
         return this.mute;
-      }
+      };
+
+      this.isBot = function() {
+        return this.player && this.player.bot;
+      };
     }
   };
 }

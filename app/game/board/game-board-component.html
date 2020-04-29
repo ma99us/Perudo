@@ -63,13 +63,19 @@
                 <dice-input size="3" value="$ctrl.bet.val" min="1" max="6"></dice-input>
                 's
                 <button ng-disabled="!$ctrl.validateBet($ctrl.bet.num, $ctrl.bet.val)"
+                        ng-class="($ctrl.bet.bot && !$ctrl.bet.dudo) ? 'glow-orange' : ''"
                         ng-click="$ctrl.makeBet($ctrl.bet.num, $ctrl.bet.val)">
                     Make Bet
                 </button>
                 <span ng-show="!$ctrl.isFirstTurn"> or </span>
                 <button ng-show="!$ctrl.isFirstTurn"
+                        ng-class="($ctrl.bet.bot && $ctrl.bet.dudo) ? 'glow-orange' : ''"
                         ng-click="$ctrl.callDudo()">
                     Dudo
+                </button>
+                <span> or </span>
+                <button ng-click="$ctrl.askBotBet()">
+                    AI hint
                 </button>
                 <p ng-if="$ctrl.watchdogMB" class="text-warning">{{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
             </div>

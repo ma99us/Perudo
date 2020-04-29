@@ -64,8 +64,8 @@ export class GameBotService {
     let bluff = this.getRandomRange(0, 4) === 0;  // 33% bluff
     const avgNum = totalDiceNum / 3;
     if ((!lastBet && bluff)
-      || (lastBet && lastBet.val > 1 && lastBet.num < avgNum * 0.8)
-      || (lastBet && lastBet.val === 1 && lastBet.num < avgNum / 2 * 0.8)) {
+      || (lastBet && bluff && lastBet.val > 1 && lastBet.num < avgNum * 0.8)
+      || (lastBet && bluff && lastBet.val === 1 && lastBet.num < avgNum / 2 * 0.8)) {
       // bluff
       let val = this.getRandomRange(lastBet ? 1 : 2, 6);  // can not start with aces
       let num = this.getRandomRange(this.perudoFindMinLegalNumForVal(lastBet, val), avgNum);

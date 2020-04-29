@@ -330,12 +330,12 @@ export class GameBoardController {
     if (this.watchdogER) {
       return;
     }
-    console.log("* watchdogEndRound;");    // #DEBUG
     this.watchdogER = this.gameBotService.watchdogCallback('8', (ts) => {  // hack to prevent AI to change the value
       // update UI
       this.watchdogERts = ts;
     });
     if (this.watchdogER) {
+      console.log("* watchdogEndRound;");    // #DEBUG
       this.watchdogER.then(() => {
         this.watchdogERts = null;
         this.watchdogER = null;
@@ -369,12 +369,12 @@ export class GameBoardController {
     if (this.watchdogRD) {
       return;
     }
-    console.log("* watchdogRollDice;");    // #DEBUG
     this.watchdogRD = this.gameBotService.watchdogCallback(5, (ts) => {
       // update UI
       this.watchdogRDts = ts;
     });
     if (this.watchdogRD) {
+      console.log("* watchdogRollDice;");    // #DEBUG
       this.watchdogRD.then(() => {
         this.watchdogRDts = null;
         this.watchdogRD = null;
@@ -425,16 +425,34 @@ export class GameBoardController {
       });
   }
 
+  askBotBet(){    // UI only
+    let allBets = this.playersData.filter(pd => pd.bet).map(pd => pd.bet);
+    let aiBet = this.gameBotService.perudoBetBot(this.diceInPlay, this.playerData.dice,
+      this.findLastBet(), allBets);
+    if(!this.bet){
+      this.bet = {};
+    }
+    if(aiBet){
+      this.bet.num = aiBet.num; // UI
+      this.bet.val = aiBet.val; // UI
+      this.bet.bot = true; // UI
+      this.bet.dudo = false; // UI
+    } else {
+      this.bet.bot = true; // UI
+      this.bet.dudo = true; // UI
+    }
+  }
+
   watchdogMakeBet() {
     if (this.watchdogMB) {
       return;
     }
-    console.log("* watchdogMakeBet;");    // #DEBUG
     this.watchdogMB = this.gameBotService.watchdogCallback(20, (ts) => {
       // update UI
       this.watchdogBMts = ts;
     });
     if (this.watchdogMB) {
+      console.log("* watchdogMakeBet;");    // #DEBUG
       this.watchdogMB.then(() => {
         this.watchdogBMts = null;
         this.watchdogMB = null;
@@ -457,6 +475,10 @@ export class GameBoardController {
     if (this.watchdogMB) {
       this.gameBotService.watchdogCancel(this.watchdogMB);
     }
+    if (this.bet) {
+      this.bet.bot = null; // UI
+      this.bet.dudo = null; // UI
+    }
     this.playerData.bet = {
       num: num,
       val: val,
@@ -473,6 +495,10 @@ export class GameBoardController {
   }
 
   callDudo(bot = null) {
+    if (this.bet) {
+      this.bet.bot = null; // UI
+      this.bet.dudo = null; // UI
+    }
     this.gameData.gameState = GameState.REVEAL;
     this.updateGameData();
   }

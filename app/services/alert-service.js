@@ -4,6 +4,14 @@ export class AlertService {
 
     this.msg = null;
     this.level = null;
+
+    // intercept all unhandled errors
+    window.onerror = (errorMsg, url, lineNumber) => {
+      const msg = `Error: ${errorMsg}; ${url}:${lineNumber}`;
+      console.log(msg); // #DEBUG
+      this.error(msg);
+      return false;
+    }
   }
 
   message(message = null) {

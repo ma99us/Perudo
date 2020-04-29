@@ -2,17 +2,18 @@
  * MikeDB Service
  */
 export class HostStorageService {
-  constructor($http, $q, API, $location, $websocket, MessageBusService) {
+  constructor($http, $q, $interval, API, $location, $websocket, MessageBusService) {
     'ngInject';
 
     this.$http = $http;
     this.$q = $q;
+    this.$interval = $interval;
     this.API = API;
     this.$location = $location;
     this.$websocket = $websocket;
     this.messageBusService = MessageBusService;
 
-    this.$http.defaults.headers.common.API_KEY = this.API.HOST_API_KEY;
+    this.$http.defaults.headers.common.API_KEY = this.API.HOST_API_KEY; // always send api key with every request header
     this.sessionId = null;
   }
 
@@ -33,15 +34,21 @@ export class HostStorageService {
     console.log("--- socket open");
     this.dataStream = this.$websocket(socketUrl);
     this.dataStream.onMessage(message => {
-      this.onMessage(message.data)
+      if(message.data === 'PONG'){
+        return; // ignore keep-alive exchanges
+      }
+      this.onMessage(message.data);
     }).onOpen(() => {
       console.log("--- on socket opened");
-      this.sendMessage({API_KEY: this.API.HOST_API_KEY});  // got to send API_KEY first thing otherwise socket will be closed
+      this.sendMessage({API_KEY: this.API.HOST_API_KEY}).then(() => {   // got to send API_KEY first, otherwise socket will be closed
+        this.startKeepAlive();
+      });
     }).onClose(() => {
       console.log("--- on socket closed");
       this.onMessage({sessionId: this.sessionId, event: 'CLOSED', message: 'Websocket closed'});
       this.dataStream = null;
       this.sessionId = null;
+      this.stopKeepAlive();
     }).onError(err => {
       console.log("--- on socket error: " + err);
       this.onMessage({sessionId: this.sessionId, event: 'ERROR', message: 'Websocket error: ' + err});
@@ -64,14 +71,14 @@ export class HostStorageService {
     this.dataStream.close();
     this.dataStream = null;
     this.sessionId = null;
+    this.stopKeepAlive();
   }
 
   sendMessage(value) {
     if (!this.dataStream) {
       throw "Websocket is not connected";
-      return;
     }
-    this.dataStream.send(value);  //TODO: JSON.stringify({message: value}) ?
+    return this.dataStream.send(value);  //TODO: JSON.stringify({message: value}) ?
   }
 
   onMessage(message) {
@@ -115,13 +122,28 @@ export class HostStorageService {
     }
   }
 
+  startKeepAlive() {
+    this.keepAliveWatchdog = this.$interval(() => {
+      this.sendMessage('PING');   //send keep-alive exchanges
+    }, 10000);    // every 10 seconds
+    this.keepAliveWatchdog.catch(() => {
+      this.keepAliveWatchdog = null;
+    });
+  }
+
+  stopKeepAlive() {
+    if (this.keepAliveWatchdog) {
+      this.$interval.cancel(this.keepAliveWatchdog);
+    }
+  }
+
   notify(name, event) {
     this.messageBusService.broadcast(name, event);
   }
 
   setSessionId(sessionId) {
     this.sessionId = sessionId;
-    this.$http.defaults.headers.common.SESSION_ID = this.sessionId;
+    this.$http.defaults.headers.common.SESSION_ID = this.sessionId; // always send session id with every request header
   }
 
   /**

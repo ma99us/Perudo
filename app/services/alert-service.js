@@ -20,11 +20,17 @@ export class AlertService {
   }
 
   warning(message = null) {
+    if (message) {
+      console.log(message);
+    }
     this.msg = message;
     this.level = 'WARNING';
   }
 
   error(message = null) {
+    if (message) {
+      console.log("ERROR: " + message);
+    }
     this.msg = message;
     this.level = 'ERROR';
   }
@@ -34,7 +40,7 @@ export class AlertService {
       level: this.level,
       message: this.msg,
       isMessage() {
-        return this.level === 'MESSAGE' && this.message;
+        return this.message || false;
       },
       isError() {
         return this.level === 'ERROR' && this.message;

@@ -35,7 +35,7 @@ export class GameController {
     console.log(`* Game; game id=${this.id}, player: \"${this.playerService.player.name}\" (id: ${this.playerService.player.id})`);
 
     this.mbsDbListener = this.messageBusService.on("db-event", (event, data) => {
-      console.log("db-event: " + JSON.stringify(data));
+      //console.log("db-event: " + JSON.stringify(data));   // #DEBUG
       if (data.key === 'players') {
         this.getPlayers();
       }
@@ -44,18 +44,22 @@ export class GameController {
       }
     });
     this.mbsEventsListener = this.messageBusService.on("session-event", (event, data) => {
-      console.log("session-event: " + JSON.stringify(data));
+      //console.log("session-event: " + JSON.stringify(data));    // #DEBUG
       if(data.event === 'OPENED' && data.sessionId === this.hostStorageService.sessionId){
         this.onOpened();
       } else if (data.event === 'ERROR') {
-        this.alertService.error(data.event.message);
+        this.alertService.error(data.message);
       } else if (data.event === 'CLOSED') {
-        this.alertService.warning(data.event.message);
+        this.alertService.warning(data.message);
       }
     });
     // this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
     //   console.log("session-message: " + data);
     // });
+    this.mbsMessagesListener = this.messageBusService.on("http-event", (event, data) => {
+      //console.log("http-event: " + data);
+      this.alertService.warning(data.message);
+    });
 
     this.API.setDbName(this.API.HOST_DB_NAME + this.id);
     this.alertService.warning("Entering game...");

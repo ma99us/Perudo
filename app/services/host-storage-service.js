@@ -15,13 +15,13 @@ export class HostStorageService {
 
     this.$http.defaults.headers.common.API_KEY = this.API.HOST_API_KEY; // always send api key with every request header
     this.sessionId = null;
+    this.MAX_RETRIES = 3; // set to <0 to disable retries
   }
 
   connect(dbName = null) {
     const url = this.API.getHostWebsocketUrl(dbName);
     if (!url) {
       throw "HOST STORAGE is not initialized";
-      return;
     }
 
     this.disconnect();  // disconnect first if needed
@@ -34,7 +34,7 @@ export class HostStorageService {
     console.log("--- socket open");
     this.dataStream = this.$websocket(socketUrl);
     this.dataStream.onMessage(message => {
-      if(message.data === 'PONG'){
+      if (message.data === 'PONG') {
         return; // ignore keep-alive exchanges
       }
       this.onMessage(message.data);
@@ -85,7 +85,7 @@ export class HostStorageService {
     let event = HostStorageService.tryJson(message);
     if (!event || typeof event !== "object") {
       //we got some primitive, not an object.
-      console.log(message);
+      //console.log(message);
       this.notify('session-message', message);
       return;
     }
@@ -103,13 +103,13 @@ export class HostStorageService {
     } else if (event.event === 'ERROR') {
       console.log("-- session error: " + event.message);
       this.notify('session-event', event);
-    } else if(event.event /*&& this.sessionId !== event.sessionId*/) {  // do not ignore our own updates
+    } else if (event.event /*&& this.sessionId !== event.sessionId*/) {  // do not ignore our own updates
       //console.log(message);
       console.log("-- DB event " + event.event + " for key=" + event.key + " from session id: " + event.sessionId);
       this.notify('db-event', event);
     } else {
       //we got some object but it is not an event.
-      console.log(message);
+      //console.log(message);
       this.notify('session-message', event);
     }
   }
@@ -203,15 +203,29 @@ export class HostStorageService {
     const url = this.API.getHostApiUrl(dbName);
     if (!url) {
       deferred.reject("HOST STORAGE is not initialized");
-      return;
+      return deferred.promise;
     }
 
-    this.$http.put(url + key, value,
-      {headers: HostStorageService.prepareHeaders(value)}).then(response => {
-      HostStorageService.validateResponse(deferred, response);
-    }, err => {
-      HostStorageService.validateResponse(deferred, err);
-    });
+    const self = this;
+    let retry = 0;
+    let request = function () {
+      self.$http.put(url + key, value, {headers: HostStorageService.prepareHeaders(value)})
+        .then(response => {
+          HostStorageService.validateResponse(deferred, response);
+        }, err => {
+          if (retry < self.MAX_RETRIES) {
+            retry++;
+            console.log("! HTTP retry #" + retry);
+            self.notify('http-event', {event: 'RETRY', message: "HTTP retry #" + retry});
+            request();
+          } else {
+            HostStorageService.validateResponse(deferred, err);
+          }
+        });
+    };
+
+    request();
+
     return deferred.promise;
   }
 
@@ -224,18 +238,32 @@ export class HostStorageService {
     const url = this.API.getHostApiUrl(dbName);
     if (!url) {
       deferred.reject("HOST STORAGE is not initialized");
-      return;
+      return deferred.promise;
     }
 
     if (!Array.isArray(value)) {
       value = [value];
     }
-    this.$http.post(url + key, value,
-      {params: {index: index}, headers: HostStorageService.prepareHeaders(value)}).then(response => {
-      HostStorageService.validateResponse(deferred, response);
-    }, err => {
-      HostStorageService.validateResponse(deferred, err);
-    });
+    const self = this;
+    let retry = 0;
+    let request = function () {
+      self.$http.post(url + key, value, {params: {index: index}, headers: HostStorageService.prepareHeaders(value)})
+        .then(response => {
+          HostStorageService.validateResponse(deferred, response);
+        }, err => {
+          if (retry < self.MAX_RETRIES) {
+            retry++;
+            console.log("! HTTP retry #" + retry);
+            self.notify('http-event', {event: 'RETRY', message: "HTTP retry #" + retry});
+            request();
+          } else {
+            HostStorageService.validateResponse(deferred, err);
+          }
+        });
+    };
+
+    request();
+
     return deferred.promise;
   }
 
@@ -251,15 +279,29 @@ export class HostStorageService {
     const url = this.API.getHostApiUrl(dbName);
     if (!url) {
       deferred.reject("HOST STORAGE is not initialized");
-      return;
+      return deferred.promise;
     }
 
-    this.$http.get(url + key,
-      {params: {firstResult: firstResult, maxResults: maxResults}}).then(response => {
-      HostStorageService.validateResponse(deferred, response);
-    }, err => {
-      HostStorageService.validateResponse(deferred, err);
-    });
+    const self = this;
+    let retry = 0;
+    let request = function () {
+      self.$http.get(url + key, {params: {firstResult: firstResult, maxResults: maxResults}})
+        .then(response => {
+          HostStorageService.validateResponse(deferred, response);
+        }, err => {
+          if (retry < self.MAX_RETRIES) {
+            retry++;
+            console.log("! HTTP retry #" + retry);
+            self.notify('http-event', {event: 'RETRY', message: "HTTP retry #" + retry});
+            request();
+          } else {
+            HostStorageService.validateResponse(deferred, err);
+          }
+        });
+    };
+
+    request();
+
     return deferred.promise;
   }
 
@@ -273,15 +315,30 @@ export class HostStorageService {
     const url = this.API.getHostApiUrl(dbName);
     if (!url) {
       deferred.reject("HOST STORAGE is not initialized");
-      return;
+      return deferred.promise;
     }
 
-    this.$http.head(url + key).then(response => {
-      response.data = response.headers('Content-Length');
-      HostStorageService.validateResponse(deferred, response);
-    }, err => {
-      HostStorageService.validateResponse(deferred, err);
-    });
+    const self = this;
+    let retry = 0;
+    let request = function () {
+      self.$http.head(url + key)
+        .then(response => {
+          response.data = response.headers('Content-Length');
+          HostStorageService.validateResponse(deferred, response);
+        }, err => {
+          if (retry < self.MAX_RETRIES) {
+            retry++;
+            console.log("! HTTP retry #" + retry);
+            self.notify('http-event', {event: 'RETRY', message: "HTTP retry #" + retry});
+            request();
+          } else {
+            HostStorageService.validateResponse(deferred, err);
+          }
+        });
+    };
+
+    request();
+
     return deferred.promise;
   }
 
@@ -293,15 +350,29 @@ export class HostStorageService {
     const url = this.API.getHostApiUrl(dbName);
     if (!url) {
       deferred.reject("HOST STORAGE is not initialized");
-      return;
+      return deferred.promise;
     }
 
-    this.$http.delete(url + key,
-      {params: {id: id, index: index}}).then(response => {
-      HostStorageService.validateResponse(deferred, response);
-    }, err => {
-      HostStorageService.validateResponse(deferred, err);
-    });
+    const self = this;
+    let retry = 0;
+    let request = function () {
+      self.$http.delete(url + key, {params: {id: id, index: index}})
+        .then(response => {
+          HostStorageService.validateResponse(deferred, response);
+        }, err => {
+          if (retry < self.MAX_RETRIES) {
+            retry++;
+            console.log("! HTTP retry #" + retry);
+            self.notify('http-event', {event: 'RETRY', message: "HTTP retry #" + retry});
+            request();
+          } else {
+            HostStorageService.validateResponse(deferred, err);
+          }
+        });
+    };
+
+    request();
+
     return deferred.promise;
   }
 
@@ -313,15 +384,30 @@ export class HostStorageService {
     const url = this.API.getHostApiUrl(dbName);
     if (!url) {
       deferred.reject("HOST STORAGE is not initialized");
-      return;
+      return deferred.promise;
     }
 
-    this.$http.patch(url + key, value,
-      {params: {index: index}, headers: HostStorageService.prepareHeaders(value)}).then(response => {
-      HostStorageService.validateResponse(deferred, response);
-    }, err => {
-      HostStorageService.validateResponse(deferred, err);
-    });
+    const self = this;
+    let retry = 0;
+    let request = function () {
+      self.$http.patch(url + key, value,
+        {params: {index: index}, headers: HostStorageService.prepareHeaders(value)})
+        .then(response => {
+          HostStorageService.validateResponse(deferred, response);
+        }, err => {
+          if (retry < self.MAX_RETRIES) {
+            retry++;
+            console.log("! HTTP retry #" + retry);
+            self.notify('http-event', {event: 'RETRY', message: "HTTP retry #" + retry});
+            request();
+          } else {
+            HostStorageService.validateResponse(deferred, err);
+          }
+        });
+    };
+
+    request();
+
     return deferred.promise;
   }
 }

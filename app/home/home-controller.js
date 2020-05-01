@@ -19,19 +19,19 @@ export class HomeController {
     console.log("* Home; no game id, player: " + this.player);
 
     this.mbsDbListener = this.messageBusService.on("db-event", (event, data) => {
-      console.log("db-event: " + JSON.stringify(data));
+      //console.log("db-event: " + JSON.stringify(data));
       if (data.key === 'lobbies') {
         this.getLobbies();
       }
     });
     this.mbsEventsListener = this.messageBusService.on("session-event", (event, data) => {
-      console.log("session-event: " + JSON.stringify(data));
+      //console.log("session-event: " + JSON.stringify(data));
       if (data.event === 'OPENED' && data.sessionId === this.hostStorageService.sessionId) {
         this.onOpened();
       } else if (data.event === 'ERROR') {
-        this.alertService.error(data.event.message);
+        this.alertService.error(data.message);
       } else if (data.event === 'CLOSED') {
-        this.alertService.warning(data.event.message);
+        this.alertService.warning(data.message);
       }
     });
     // this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
@@ -76,6 +76,7 @@ export class HomeController {
       return false;
     }
     this.player.id = this.player.id || Math.floor(Math.random() * Math.floor(10000000) + 1);
+    this.player.color = this.player.color || 'black';
     this.localStorageService.setObject("game.gameField-player", this.player);
     return true;
   }

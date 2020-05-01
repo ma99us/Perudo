@@ -46,7 +46,8 @@ export function GameBoardDiceDirective() {
       };
 
       this.isDarkColor = function(color){
-        return color === '#000000' || color === 'black' || color === '' || color === '#000' || color === 0;
+        return false;
+        //return color === '#000000' || color === 'black' || color === '' || color === '#000' || color === 0; // not used for now
       };
 
       this.getImage = function () {
@@ -65,7 +66,7 @@ export function GameBoardDiceDirective() {
         } else if(this.getValue() != null || this.nohide) {
           return this.isDarkColor(this.getColor()) ? './img/unknown-w.svg' : './img/unknown.svg';
         } else {
-          return null;
+          return './img/blank.svg';
         }
       };
     }

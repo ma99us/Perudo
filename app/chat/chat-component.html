@@ -1,4 +1,4 @@
-<div class="card offset-xl-3 col-xl-6">
+<div class="card offset-xl-3 col-xl-6" ng-if="$ctrl.hostStorageService.dataStream">
     <div class="card-body container">
         <div id="messages" class="vertical-scroll">
             <p ng-repeat="m in $ctrl.messages track by $index">

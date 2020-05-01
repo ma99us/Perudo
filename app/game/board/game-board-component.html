@@ -1,13 +1,7 @@
 <div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
         <h1>NO-NONSENSE PERUDO</h1>
-        (game id: {{$ctrl.game.id}})
-    </div>
-    <div class="card bg-warning text-white text-center" ng-show="$ctrl.game.alertService.alert.isWarning()">
-        {{$ctrl.game.alertService.alert.message}}
-    </div>
-    <div class="card bg-danger text-white" ng-show="$ctrl.game.alertService.alert.isError()">
-        {{$ctrl.game.alertService.alert.message}}
+        <!--(game id: {{$ctrl.game.id}})-->
     </div>
     <div class="card-body">
         <ul class="list-unstyled">
@@ -32,7 +26,8 @@
                             </span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.playerTurn && $ctrl.gameData.gameState === 'REVEALED'">
-                            <strong class="text-warning glow-black">DUDO!</strong>
+                            <strong class="text-warning glow-black" ng-show="$ctrl.findPlayersData(p).bet.dudo">DUDO!</strong>
+                            <span ng-show="$ctrl.findPlayersData(p).bet.bot"> (AI)</span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.lastLoserIndex && $ctrl.gameData.gameState === 'REVEALED'">
                             <strong class="text-danger glow-black">LOST!</strong>
@@ -41,7 +36,8 @@
                 </div>
             </li>
         </ul>
-        <div class="text-center">
+        <div class="card text-center">
+            <h6 ng-show="$ctrl.diceInPlay > 0">Total dice in play: {{$ctrl.diceInPlay}}</h6>
             <h4 ng-show="$ctrl.gameData.prompt">{{$ctrl.gameData.prompt}}</h4>
             <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
                 <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <3</h5>
@@ -52,16 +48,17 @@
                 </button>
                 <p ng-if="$ctrl.watchdogRD" class="text-warning">{{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
             </div>
-            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.isSelfTurn" style="user-select: none;">
-                <h6 ng-show="$ctrl.diceInPlay > 0">Total dice in play: {{$ctrl.diceInPlay}}</h6>
+            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.playerData.state === 'TURN'" style="user-select: none;">
                 <h4 ng-show="!$ctrl.isFirstTurn">
                     Last bet: {{$ctrl.findLastBet().num}} of {{$ctrl.findLastBet().val}}'s
                 </h4>
                 Your bet:
-                <num-input value="$ctrl.bet.num" min="1" max="99"></num-input>
-                of
-                <dice-input size="3" value="$ctrl.bet.val" min="1" max="6"></dice-input>
-                's
+                <span ng-class="($ctrl.bet.bot && !$ctrl.bet.dudo) ? 'glow-orange' : ''">
+                    <num-input value="$ctrl.bet.num" min="1" max="$ctrl.diceInPlay"></num-input>
+                    of
+                    <dice-input size="3" value="$ctrl.bet.val" min="1" max="6"></dice-input>
+                    's
+                </span>
                 <button ng-disabled="!$ctrl.validateBet($ctrl.bet.num, $ctrl.bet.val)"
                         ng-class="($ctrl.bet.bot && !$ctrl.bet.dudo) ? 'glow-orange' : ''"
                         ng-click="$ctrl.makeBet($ctrl.bet.num, $ctrl.bet.val)">
@@ -73,7 +70,7 @@
                         ng-click="$ctrl.callDudo()">
                     Dudo
                 </button>
-                <span> or </span>
+                or ask
                 <button ng-click="$ctrl.askBotBet()">
                     AI hint
                 </button>

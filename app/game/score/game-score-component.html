@@ -3,12 +3,6 @@
         <h1>GAME OVER</h1>
         (game id: {{$ctrl.game.id}})
     </div>
-    <div class="card bg-warning text-white text-center" ng-show="$ctrl.game.alertService.alert.isWarning()">
-        {{$ctrl.game.alertService.alert.message}}
-    </div>
-    <div class="card bg-danger text-white" ng-show="$ctrl.game.alertService.alert.isError()">
-        {{$ctrl.game.alertService.alert.message}}
-    </div>
     <div class="card-body container text-center">
         <div ng-if="$ctrl.game.state === 'FINISHED'">
             <small ng-show="$ctrl.playedAt">Finished at {{$ctrl.playedAt | date:'medium'}}</small>

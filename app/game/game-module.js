@@ -10,7 +10,7 @@ import {AlertService} from "../services/alert-service.js";
 // import game services
 import {LobbyService} from "./lobby-service.js";
 import {PlayerService} from "./player-service.js";
-import {GameBotService} from "./bot/game-bot-service.js";
+import {GameBotService} from "./board/bot/game-bot-service.js";
 
 // import app components
 import {LobbyComponent} from "./lobby/lobby-component.js";

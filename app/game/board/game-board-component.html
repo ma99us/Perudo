@@ -93,17 +93,17 @@
             <label for="bot-controls">AI controls:</label>
             <div id="bot-controls" class="btn-group" role="group" aria-label="AI controls:">
                 <button type="button" class="btn btn-outline-secondary"
-                        ng-class="$ctrl.gameBotService.botMode === $ctrl.gameBotService.BotMode.None ? 'active' :''"
+                        ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.None ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.None)">
                     No AI
                 </button>
                 <button type="button" class="btn btn-outline-secondary"
-                        ng-class="$ctrl.gameBotService.botMode === $ctrl.gameBotService.BotMode.Kevin ? 'active' :''"
+                        ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.Kevin ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Kevin)">
                     Mellow Kevin
                 </button>
                 <button type="button" class="btn btn-outline-secondary"
-                        ng-class="$ctrl.gameBotService.botMode === $ctrl.gameBotService.BotMode.Ian ? 'active' :''"
+                        ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.Ian ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Ian)">
                     Crazy Ian
                 </button>
@@ -131,6 +131,11 @@
             <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToKick">
             <button ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
                 !KICK PLAYER!
+            </button><br/>
+            <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToEdit">
+            <input type="text" size="6" ng-model="$ctrl.debugPlayerState">
+            <button ng-click="$ctrl.debugChangePlayerStateByName($ctrl.debugPlayerNameToEdit, $ctrl.debugPlayerState)">
+                !CHANGE PLAYER STATE!
             </button>
         </div>
     </div>

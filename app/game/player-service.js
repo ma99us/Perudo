@@ -14,11 +14,16 @@ export class PlayerService {
 
   loadPlayer(gameName) {
     this.player = this.localStorageService.getObject(gameName);
+    return this.player;
   }
 
   unloadPlayer(){
     this.player = null;
     this.isReady = false;
+  }
+
+  get isHost() {
+    return this.player && this.player.isHost;
   }
 
   get isSpectator() {
@@ -67,7 +72,6 @@ export class PlayerService {
 
   getPlayers() {
     return this.hostStorageService.get("players").then(data => {
-      this.alertService.message();
       this.players = ((!Array.isArray(data) && data !== null) ? [data] : data) || []; // should always be an array
     }).catch(err => {
       this.alertService.error(err);
@@ -76,7 +80,6 @@ export class PlayerService {
 
   updatePlayers(player, index = null) {
     return this.hostStorageService.update("players", player, index).then(data => {
-      this.alertService.message();
     }).catch(err => {
       this.alertService.error(err);
     })
@@ -84,7 +87,6 @@ export class PlayerService {
 
   removePlayers(player) {
     return this.hostStorageService.delete("players", player.id).then(data => {
-      this.alertService.message();
     }).catch(err => {
       this.alertService.error(err);
     })

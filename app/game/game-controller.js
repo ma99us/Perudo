@@ -1,6 +1,6 @@
 export class GameController {
   constructor($routeParams, $location, API, HostStorageService, MessageBusService, AlertService,
-              LobbyService, PlayerService) {
+              LobbyService, PlayerService, GameBotService) {
     'ngInject';
 
     this.id = Number($routeParams.id);
@@ -11,6 +11,7 @@ export class GameController {
     this.alertService = AlertService;
     this.lobbyService = LobbyService;
     this.playerService = PlayerService;
+    this.gameBotService = GameBotService;
 
     this.state = null;  // current game state. (LOBBY, GAME, FINISHED)
     this.gameName = "Perudo";
@@ -179,7 +180,14 @@ export class GameController {
   getPlayers() {
     return this.playerService.getPlayers()
       .then(() => {
-        this.checkSelf();
+        return this.checkSelf();
+      })
+      .then(() => {
+        if (this.playerService.player.isHost) {
+          this.gameBotService.checkBots();
+        }
+      })
+      .then(() => {
         return this.updateLobby();
       });
   }

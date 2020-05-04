@@ -109,7 +109,7 @@ export class ChatController {
       idx = this.players.findIndex((p) => p.name === player.name);
     }
     if (idx >= 0) {
-      this.players = this.players.splice(idx, 1);
+      this.players.splice(idx, 1);
     }
   }
 

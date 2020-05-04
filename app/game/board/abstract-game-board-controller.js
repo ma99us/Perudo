@@ -16,7 +16,8 @@ export class AbstractGameBoardController {
 
   $onInit() {
     console.log(`* Initializing Game Board; game=${this.game.gameName}"; id=${this.game.id}; `+
-      `Player id=${this.playerService.player.id}; isSpectator=${this.playerService.isSpectator}; isBot=${this.playerService.isBot}`);
+      `Player=${this.playerService.player.name} id=${this.playerService.player.id}; `+
+      `isHost=${this.playerService.isHost} ; isSpectator=${this.playerService.isSpectator}; isBot=${this.playerService.isBot}`);
 
     this.gameDbListener = this.messageBusService.on("db-event", (event, data) => {
       //console.log("db-event: " + JSON.stringify(data));
@@ -54,7 +55,7 @@ export class AbstractGameBoardController {
   }
 
   onOpened() {
-    this.getPlayersData()   // get all players public data
+    return this.getPlayersData()   // get all players public data
       .then(() => {
         return this.getPlayerData();  // restore self personal data if any
       })
@@ -65,6 +66,7 @@ export class AbstractGameBoardController {
         this.processGameDataChange();
       })
       .then(() => {
+        console.log("Game synchronized");  // #DEBUG
         this.alertService.message();
       })
       .catch((err) => {
@@ -170,8 +172,13 @@ export class AbstractGameBoardController {
 
   getPlayerData() {
     const promise = this.hostStorageService.get(".playerData-" + this.playerService.player.id).then(data => {
-      this.gameBotService.botMode = this.playerService.player.isBot ? this.gameBotService.BotMode.Ian : this.gameBotService.botMode;
-      this.gameBotService.botMode = (data && data.botMode) ? data.botMode : this.gameBotService.botMode;
+      if(data && data.botMode){
+        this.playerService.player.botMode = data.botMode;
+      } else if (this.playerService.isBot) {
+        this.playerService.player.botMode = this.gameBotService.BotMode.Ian;
+      } else if(!this.playerService.player.botMode){
+        this.playerService.player.botMode = this.gameBotService.BotMode.Kevin;
+      }
       return data;  // resolve next .then with the same data
     });
     promise.catch(err => {
@@ -182,7 +189,7 @@ export class AbstractGameBoardController {
 
   updatePlayerData(playerData) {
     playerData.id = playerData.id || this.playerService.player.id;
-    playerData.botMode = playerData.botMode || this.gameBotService.botMode;
+    playerData.botMode = playerData.botMode || this.playerService.player.botMode;
     const key = ".playerData-" + this.playerService.player.id;
     console.log(`++ updating DB "${key}": ${JSON.stringify(playerData)}`);  // #DEBUG
     return this.hostStorageService.update(key, playerData).catch(err => {
@@ -257,9 +264,9 @@ export class AbstractGameBoardController {
       this.watchdogER = null;
     }
 
-    this.gameBotService.botMode = mode;
+    this.playerService.player.botMode = mode;
 
-    this.playerData.botMode = this.gameBotService.botMode;
+    this.playerData.botMode = this.playerService.player.botMode;
     this.updatePlayerData();
 
     this.processGameDataChange();

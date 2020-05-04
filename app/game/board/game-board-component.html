@@ -1,6 +1,6 @@
 <div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
-        <h1>NO-NONSENSE PERUDO</h1>
+        <h1><i class="fas fa-dice"></i> NO-NONSENSE PERUDO</h1>
         <!--(game id: {{$ctrl.game.id}})-->
     </div>
     <div class="card-body">
@@ -22,12 +22,12 @@
                         && $ctrl.findPlayersData(p).bet">
                             <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
                                 Bet: {{$ctrl.findPlayersData(p).bet.num}} of {{$ctrl.findPlayersData(p).bet.val}}'s
-                                <span ng-show="$ctrl.findPlayersData(p).bet.bot"> (AI)</span>
+                                <span ng-show="$ctrl.findPlayersData(p).bet.bot"> <i class="fas fa-robot"></i></span>
                             </span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.playerTurn && $ctrl.gameData.gameState === 'REVEALED'">
                             <strong class="text-warning glow-black" ng-show="$ctrl.findPlayersData(p).bet.dudo">DUDO!</strong>
-                            <span ng-show="$ctrl.findPlayersData(p).bet.bot"> (AI)</span>
+                            <span ng-show="$ctrl.findPlayersData(p).bet.bot"> <i class="fas fa-robot"></i></span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.lastLoserIndex && $ctrl.gameData.gameState === 'REVEALED'">
                             <strong class="text-danger glow-black">LOST!</strong>
@@ -38,15 +38,15 @@
         </ul>
         <div class="card text-center">
             <h6 ng-show="$ctrl.diceInPlay > 0">Total dice in play: {{$ctrl.diceInPlay}}</h6>
-            <h4 ng-show="$ctrl.gameData.prompt">{{$ctrl.gameData.prompt}}</h4>
+            <h4 ng-show="$ctrl.gameData.prompt" ng-bind-html="$ctrl.gameData.prompt"></h4>
             <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
-                <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <3</h5>
-                <h6 ng-show="this.playerData.diceNum > 1">You have {{this.playerData.diceNum}} dice</h6>
-                <h5 ng-show="this.playerData.diceNum === 1">You have the last dice. Make it count!</h5>
+                <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <i class="far fa-heart"></i></h5>
+                <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice</h6>
+                <h5 ng-show="$ctrl.playerData.diceNum === 1">You have the last dice. Make it count!</h5>
                 <button ng-click="$ctrl.rollDice()">
-                    Roll Dice
+                    <i class="fas fa-dice"></i> Roll Dice
                 </button>
-                <p ng-if="$ctrl.watchdogRD" class="text-warning">{{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
+                <p ng-if="$ctrl.watchdogRD" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
             </div>
             <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.playerData.state === 'TURN'" style="user-select: none;">
                 <h4 ng-show="!$ctrl.isFirstTurn">
@@ -62,47 +62,50 @@
                 <button ng-disabled="!$ctrl.validateBet($ctrl.bet.num, $ctrl.bet.val)"
                         ng-class="($ctrl.bet.bot && !$ctrl.bet.dudo) ? 'glow-orange' : ''"
                         ng-click="$ctrl.makeBet($ctrl.bet.num, $ctrl.bet.val)">
-                    Make Bet
+                    <i class="fas fa-check"></i> Make Bet
                 </button>
                 <span ng-show="!$ctrl.isFirstTurn"> or </span>
                 <button ng-show="!$ctrl.isFirstTurn"
                         ng-class="($ctrl.bet.bot && $ctrl.bet.dudo) ? 'glow-orange' : ''"
                         ng-click="$ctrl.callDudo()">
-                    Dudo
+                    <i class="fas fa-times"></i> Dudo
                 </button>
                 or ask
                 <button ng-click="$ctrl.askBotBet()">
-                    AI hint
+                    <i class="fas fa-robot"></i> hint
                 </button>
-                <p ng-if="$ctrl.watchdogMB" class="text-warning">{{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
+                <p ng-if="$ctrl.watchdogMB" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
             </div>
             <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost">
-                <h5 ng-show="this.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h5>
-                <h5 ng-show="this.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h5>
-                <h5 ng-show="this.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h5>
-                <h5 ng-show="this.playerData.diceNum === 0">You are out. Sorry :-(</h5>
-                <button ng-click="$ctrl.endRound()">
-                    {{$ctrl.checkForWinnerPlayer() ? 'Final Scores' : 'Next Round'}}
+                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h5>
+                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h5>
+                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h5>
+                <h5 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry <i class="fas fa-ghost"></i></h5>
+                <button ng-show="!$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
+                    <i class="fas fa-step-forward"></i> Next Round
                 </button>
-                <p ng-if="$ctrl.watchdogER" class="text-warning">{{$ctrl.watchdogERts | date: 'mm:ss'}}</p>
+                <button ng-show="$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
+                    <i class="fas fa-clipboard-list"></i> Final Scores
+                </button>
+                <p ng-if="$ctrl.watchdogER" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogERts | date: 'mm:ss'}}</p>
             </div>
         </div>
     </div>
     <div class="card-footer text-center">
-        <div>
+        <div class="text-right">
             <label for="bot-controls">AI controls:</label>
             <div id="bot-controls" class="btn-group" role="group" aria-label="AI controls:">
-                <button type="button" class="btn btn-outline-secondary"
+                <button type="button" class="btn btn-outline-secondary btn-sm"
                         ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.None ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.None)">
                     No AI
                 </button>
-                <button type="button" class="btn btn-outline-secondary"
+                <button type="button" class="btn btn-outline-secondary btn-sm"
                         ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.Kevin ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Kevin)">
                     Mellow Kevin
                 </button>
-                <button type="button" class="btn btn-outline-secondary"
+                <button type="button" class="btn btn-outline-secondary btn-sm"
                         ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.Ian ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Ian)">
                     Crazy Ian
@@ -115,6 +118,7 @@
             <p>Game id: {{$ctrl.game.id}}</p>
             <p>Player: "{{$ctrl.playerService.player.name}}", id: {{$ctrl.playerService.player.id}}</p>
             <p>Game state: {{$ctrl.gameData.gameState}}, Player state: {{$ctrl.playerData.state}}</p>
+            <button ng-click="$ctrl.debugDumpAllGameData()">!DUMP GAME STATE!</button>
             <button ng-click="$ctrl.finishGame()">
                 !EXIT GAME!
             </button>
@@ -127,7 +131,7 @@
             <input type="number" min="0" ng-model="$ctrl.debugResetTurnNum" style="width: 4em;">
             <button ng-click="$ctrl.debugResetTurn($ctrl.debugResetTurnNum)">
                 !RESET TURN!
-            </button><br/>
+            </button>
             <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToKick">
             <button ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
                 !KICK PLAYER!

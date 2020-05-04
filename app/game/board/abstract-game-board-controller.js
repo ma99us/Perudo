@@ -22,14 +22,20 @@ export class AbstractGameBoardController {
     this.gameDbListener = this.messageBusService.on("db-event", (event, data) => {
       //console.log("db-event: " + JSON.stringify(data));
       if (data.key === 'playersData') {
-        this.getPlayersData().then(() => {
-          this.processGameDataChange();
-        });
+        console.log("on \"playersData\" db-event; " + JSON.stringify(data.value));   // #DEBUG
+        this.mergePlayersData(data.value);
+        this.processGameDataChange();
+        // this.getPlayersData().then(() => {
+        //   this.processGameDataChange();
+        // });
       }
       else if (data.key === 'gameData') {
-        this.getGameData().then(() => {
-          this.processGameDataChange();
-        });
+        console.log("on \"gameData\" db-event; " + JSON.stringify(data.value));   // #DEBUG
+        this.gameData = data.value;
+        this.processGameDataChange();
+//        this.getGameData().then(() => {
+//          this.processGameDataChange();
+//        });
       }
     });
     this.gameEventListener = this.messageBusService.on('game-event', (event, data) => {
@@ -215,6 +221,15 @@ export class AbstractGameBoardController {
     return this.playersData.find((p) => p.id === player.id);
   }
 
+  mergePlayersData(playersData) {
+    let idx = this.playersData.findIndex(pd => pd.id === playersData.id);
+    if (idx >= 0) {
+      this.playersData[idx] = playersData;
+    } else {
+      this.playersData.push(playersData);
+    }
+  }
+
   getPlayersData(initPlayersData) {
     return this.hostStorageService.get("playersData").then(data => {
       this.playersData = ((!Array.isArray(data) && data !== null) ? [data] : data) || []; // should always be an array
@@ -276,7 +291,30 @@ export class AbstractGameBoardController {
     return Math.floor(Math.random() * (to + 1 - from) + from);
   }
 
+  playSound(soundName) {
+    if (this.playerService.isBot) {
+      return;
+    }
+    this.game.playSound(soundName);
+  }
+
+  stopSound(soundName = null) {
+    if (this.playerService.isBot) {
+      return;
+    }
+    this.game.stopSound(soundName);
+  }
+
   /** DEBUG ONLY! **/
+
+  debugDumpAllGameData() {
+    let dumpStr = "*** gameData:\n" + JSON.stringify(this.gameData, null, '\t');
+    dumpStr += "\n*** all playersData:\n" + JSON.stringify(this.playersData, null, '\t');
+    dumpStr += "\n*** self playerData:\n" + JSON.stringify(this.playerData, null, '\t');
+    dumpStr += "\n*** self player:\n" + JSON.stringify(this.playerService.player, null, '\t');
+    console.log(dumpStr);
+    this.alertService.showPopup('! DEBUG GAME STATE !', dumpStr);
+  }
 
   debugRestartGame() {
     this.alertService.message();

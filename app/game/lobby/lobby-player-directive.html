@@ -5,8 +5,8 @@
         {{$ctrl.player.name}}
     </strong>
     <span ng-if="$ctrl.isSpectator()" class="text-muted">{{$ctrl.player.name}}</span>
-    <strong ng-if="$ctrl.isBot()"> (BOT)</strong>
-    <small ng-if="$ctrl.isHost()"> (host)</small>
-    <small ng-if="$ctrl.isSpectator()"> (spectator)</small>
-    <small ng-if="$ctrl.isMuted()"> (OUT)</small>
+    <i ng-if="$ctrl.isBot() && !$ctrl.isMuted()" style="color: {{$ctrl.player.color}}" class="fas fa-robot"></i>
+    <i ng-if="$ctrl.isHost()" class="fas fa-server"></i>
+    <i ng-if="$ctrl.isSpectator()" class="far fa-eye"></i>
+    <i ng-if="$ctrl.isMuted()" style="color: {{$ctrl.player.color}}" class="fas fa-ghost"></i>
 </div>

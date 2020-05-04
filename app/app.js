@@ -2,6 +2,7 @@
 import "./lib/angular-route/angular-route.js";
 import "./lib/angular-resource/angular-resource.js";
 import "./lib/angular-sanitize/angular-sanitize.js";
+import "./lib/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js";
 
 import {HomeModule} from "./home/home-module.js";
 import {GameModule} from "./game/game-module.js";
@@ -10,6 +11,7 @@ export const App = angular.module('App', [
   'ngRoute',
   'ngSanitize',
   'ngWebSocket',
+  'ui.bootstrap',
   HomeModule,
   GameModule
 ]).config(function ($locationProvider, $routeProvider, $sceDelegateProvider) {

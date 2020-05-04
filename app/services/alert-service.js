@@ -1,7 +1,8 @@
 export class AlertService {
-  constructor() {
+  constructor($uibModal) {
     'ngInject';
 
+    this.$uibModal = $uibModal;
     this.msg = null;
     this.level = null;
 
@@ -49,5 +50,24 @@ export class AlertService {
         return this.level === 'WARNING' && this.message;
       }
     }
+  }
+
+  showPopup(title, message) {
+    return this.$uibModal.open({
+      animation: false,
+      ariaLabelledBy: 'modal-title',
+      ariaDescribedBy: 'modal-body',
+      templateUrl: './services/alert-service-popup.html',
+      controller: function ($uibModalInstance) {
+        this.title = title;
+        this.message = message;
+
+        this.cancel = function () {
+          $uibModalInstance.dismiss('cancel');
+        };
+      },
+      controllerAs: '$ctrl',
+      size: 'lg',
+  });
   }
 }

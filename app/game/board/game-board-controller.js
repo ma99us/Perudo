@@ -63,16 +63,15 @@ export class GameBoardController extends AbstractGameBoardController {
       if (this.playerData.state !== GameState.ROLL && this.playerData.state !== GameState.ROLLING
         && this.playerData.state !== GameState.ROLLED) {
         // reset previous round player data
+        this.playerData.bet = null;
         this.playerData.dice = [];
-        return this.updatePlayerData().then(() => {
-          this.playerData.bet = null;
-          this.playerData.dice = [];
-          if (this.playerData.diceNum > 0) {
-            this.playerData.state = GameState.ROLL; // need to roll dice
-          } else {
-            this.playerData.state = GameState.ROLLING; // out of the game, just switch to next state
-          }
-          return this.updatePlayersData(this.makePublicPlayerData());
+        if (this.playerData.diceNum > 0) {
+          this.playerData.state = GameState.ROLL; // need to roll dice
+        } else {
+          this.playerData.state = GameState.ROLLING; // out of the game, just switch to next state
+        }
+        return this.updatePlayersData(this.makePublicPlayerData()).then(() => {
+          return this.updatePlayerData();
         });
       }
       if (this.isHost && this.gameData.winner) {
@@ -137,9 +136,11 @@ export class GameBoardController extends AbstractGameBoardController {
           if (isGoodDudo === true) {
             // Oh, no! dudo was good, we lost a dice
             console.log("* Oh, no! next player dudo was good");    // #DEBUG
+            this.playSound('boo');
             return this.loseDice();
           } else if (isGoodDudo === false) {
             console.log("* Yea! Someone dudoed us and failed");    // #DEBUG
+            this.playSound('wow');
             this.playerData.state = GameState.DONE;
             return this.updatePlayersData(this.makePublicPlayerData(false));
           }
@@ -149,9 +150,11 @@ export class GameBoardController extends AbstractGameBoardController {
           if (dudoRes === false) {
             // Oh, no! dudo was bad, we lost a dice
             console.log("* Oh, no! our dudo was bad.");    // #DEBUG
+            this.playSound('boo');
             return this.loseDice();
           } else if (dudoRes === true) {
             console.log("* Yea! We successfully dodoed someone");    // #DEBUG
+            this.playSound('wow');
             this.playerData.state = GameState.DONE;
             return this.updatePlayersData(this.makePublicPlayerData(false));
           }
@@ -331,6 +334,8 @@ export class GameBoardController extends AbstractGameBoardController {
     if (this.watchdogER) {
       this.gameBotService.watchdogCancel(this.watchdogER);
     }
+    this.stopSound();
+
     // advance player turn
     this.gameData.playerTurn = this.gameData.nextPlayerTurn;
     // reset last round info
@@ -364,6 +369,8 @@ export class GameBoardController extends AbstractGameBoardController {
         this.watchdogRDts = null;
         this.watchdogRD = null;
       });
+    } else {
+      this.playSound('dice_roll');
     }
   }
 
@@ -371,17 +378,19 @@ export class GameBoardController extends AbstractGameBoardController {
     if (this.watchdogRD) {
       this.gameBotService.watchdogCancel(this.watchdogRD);
     }
-    this.atomicUpdate = true;
+    this.stopSound('dice_roll');
+
+    //this.atomicUpdate = true;
+    this.playerData.bet = null;
     this.playerData.dice = [];
     for (let i = 0; i < this.playerData.diceNum; i++) {
       this.playerData.dice.push(Math.floor(Math.random() * 6 + 1))
     }
-    this.updatePlayerData().then(() => {
-      this.playerData.state = GameState.ROLLING;
-      this.playerData.bet = null;
-      this.updatePlayersData(this.makePublicPlayerData());
+    this.playerData.state = GameState.ROLLING;
+    this.updatePlayersData(this.makePublicPlayerData()).then(() => {
+      this.updatePlayerData();
     }).finally(() => {
-      this.atomicUpdate = false;
+      //this.atomicUpdate = false;
     });
   }
 
@@ -398,7 +407,7 @@ export class GameBoardController extends AbstractGameBoardController {
         this.gameData.lastLoserIndex = this.selfIndex;
         this.gameData.lastLoserStreek = (this.gameData.prevLoserIndex === this.gameData.lastLoserIndex) ? (this.gameData.lastLoserStreek + 1) : 1;
         this.gameData.prompt = `Bet ${this.dudo.bet_num} of ${this.dudo.bet_val}'s, revealed: ${this.dudo.total}.` +
-          ` \"${this.playerService.player.name}\" loses a dice :-(`;
+          ` \"${this.playerService.player.name}\" loses a dice <i class="far fa-sad-tear"></i>`;
         // find next player index turn
         if (this.playerData.diceNum > 0) {
           this.gameData.nextPlayerTurn = this.selfIndex;

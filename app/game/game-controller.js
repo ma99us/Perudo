@@ -15,6 +15,7 @@ export class GameController {
 
     this.state = null;  // current game state. (LOBBY, GAME, FINISHED)
     this.gameName = "Perudo";
+    this.sounds = {}; // sounds being currently played
   }
 
   $onInit() {
@@ -122,6 +123,10 @@ export class GameController {
   }
 
   checkSelf() {
+    if (!this.playerService.isValidPlayer(this.playerService.player)) {
+      this.goHome();
+      return false;
+    }
     const idx = this.playerService.selfPlayerIndex;
     this.playerService.player.isHost = idx === 0; // player index 0 is always a host
     if (!this.playerService.player.inLobby && idx >= 0) { // was not in game, but now is
@@ -130,6 +135,7 @@ export class GameController {
     } else if(this.playerService.player.inLobby && idx < 0){ // was in game, but now is not
       this.playerService.player.inLobby = false;
       this.goHome();
+      return false;
     }
     return idx >= 0;
   }
@@ -183,7 +189,7 @@ export class GameController {
         return this.checkSelf();
       })
       .then(() => {
-        if (this.playerService.player.isHost) {
+        if (this.playerService.isHost) {
           this.gameBotService.checkBots();
         }
       })
@@ -226,5 +232,67 @@ export class GameController {
     this.lobbyService.lobby.state =  this.state;
     this.lobbyService.lobby.lastStateUpdate =  this.lastStateUpdate;
     return this.lobbyService.updateLobby();
+  }
+
+  playSound(soundName) {
+    if (this.isSoundMuted) {
+      return;
+    }
+    let audio = null;
+    if (soundName === 'dice_roll') {
+      audio = new Audio('./sounds/dice_roll.mp3');
+    }
+    else if (soundName === 'wow') {
+      audio = new Audio('./sounds/wow.mp3');
+    }
+    else if (soundName === 'boo') {
+      audio = new Audio('./sounds/boo.mp3');
+    }
+    else if (soundName === 'ding') {
+      audio = new Audio('./sounds/ding.mp3');
+    } else {
+      audio = new Audio('./sounds/ding.mp3'); // also default
+    }
+    if (!audio || this.sounds[soundName]) {
+      return;
+    }
+    this.sounds[soundName] = audio;
+    audio.addEventListener("ended", () => {
+      this.sounds[soundName] = null;
+    });
+    audio.play().catch(err => {
+      console.log(err);
+    });
+  }
+
+  stopSound(soundName = null){
+    if (!soundName) {
+      Object.keys(this.sounds).map((key, index) => {
+        if (this.sounds[key]) {
+          this.sounds[key].pause();
+          this.sounds[key].currentTime = 0;
+          this.sounds[key] = null;
+        }
+      });
+    } else {
+      const audio = this.sounds[soundName];
+      if (!audio) {
+        return;
+      }
+      audio.pause();
+      audio.currentTime = 0;
+      this.sounds[soundName] = null;
+    }
+  }
+
+  soundMuteToggle(){
+    this.isSoundMuted = !this.isSoundMuted;
+    if (this.isSoundMuted) {
+      this.stopSound();
+    }
+  }
+
+  get isSoundMute() {
+    return this.isSoundMuted;
   }
 }

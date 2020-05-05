@@ -2,7 +2,7 @@
     <button ng-disabled="$ctrl.value <= $ctrl.min"
             ng-click="$ctrl.dec()"
             style="width: 2em; vertical-align: middle;">
-       <
+       <i class="fas fa-chevron-left"></i>
     </button>
     <span ng-click="$ctrl.enc(true)">
         <dice id="betDiceVal"
@@ -16,6 +16,6 @@
     <button ng-disabled="$ctrl.value >= $ctrl.max"
             ng-click="$ctrl.enc()"
             style="width: 2em; vertical-align: middle;">
-        >
+        <i class="fas fa-chevron-right"></i>
     </button>
 </span>

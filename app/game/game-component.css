@@ -11,3 +11,16 @@
     margin-top: 0px;
     margin-bottom: 0px;
 }
+
+.card-body {
+    padding: 0.15rem 0.25rem 0.15rem 0.25rem;
+}
+
+.card-footer {
+    padding: 0.15rem 0.25rem 0.15rem 0.25rem;
+}
+
+.div-thin {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}

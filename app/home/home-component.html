@@ -1,6 +1,6 @@
 <div class="align-items-center">
     <div class="card offset-xl-3 col-xl-6">
-        <h1 class="card-header text-center">HFG ARENA (beta)</h1>
+        <h1 class="card-header text-center"><i class="fas fa-house-user"></i> HFG ARENA (beta)</h1>
         <div class="card bg-warning text-black text-center" ng-show="$ctrl.alertService.alert.isWarning()">{{$ctrl.alertService.alert.message}}</div>
         <div class="card bg-danger text-white" ng-show="$ctrl.alertService.alert.isError()">{{$ctrl.alertService.alert.message}}</div>
         <div class="card-body">
@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="text-center">
-                <button ng-click="$ctrl.newLobby()">Start New Game</button>
+                <button ng-click="$ctrl.newLobby()"><i class="fas fa-play-circle"></i> Start New Game</button>
             </div>
             <div class="text-center" ng-show="$ctrl.lobbies && $ctrl.lobbies.length > 0">
                 or join a game lobby:
@@ -33,11 +33,11 @@
                                 <span ng-show="!l.state">...</span>
                                 <button ng-show="l.state === 'LOBBY'" ng-click="$ctrl.joinLobby(l.id)">Join</button>
                                 <span ng-show="l.state === 'GAME'">in game
-                                    <button ng-click="$ctrl.joinLobby(l.id)">Spectate</button>
+                                    <button ng-click="$ctrl.joinLobby(l.id)"><i class="far fa-eye"></i> Spectate</button>
                                 </span>
                                 <span ng-show="l.state === 'FINISHED'">finished
                                     <!--<button ng-show="$ctrl.player.name === l.host" ng-click="$ctrl.deleteLobby(l.id)">X</button>-->
-                                    <button ng-click="$ctrl.joinLobby(l.id)">View Score</button>
+                                    <button ng-click="$ctrl.joinLobby(l.id)"><i class="fas fa-clipboard-list"></i> View Score</button>
                                 </span>
                             </div>
                         </div>

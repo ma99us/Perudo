@@ -1,4 +1,5 @@
 /* app css stylesheet */
+@import "./lib/angular-ui-bootstrap/dist/ui-bootstrap-csp.css";
 @import "./game/game-component.css";
 @import "./home/home-component.css";
 

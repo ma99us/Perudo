@@ -54,25 +54,34 @@ export class GameBoardController extends AbstractGameBoardController {
    * @param newState
    */
   processGameDataChange() {
-    if (!this.gameData || !this.playerData || !this.playersData || this.atomicUpdate) {
+    if (!this.gameData || !this.playerData || !this.playersData || !this.isReady) {
       return; // not fully initialized yet, or not ready to process state yet.
     }
+    if(this.atomicUpdate){
+      this.pendingProcessGameDataChange = true;
+      return;
+    }
     //console.log("* gameState=" + this.gameData.gameState);
-
+    this.pendingProcessGameDataChange = false;
     if (this.gameData.gameState === GameState.ROLL) {
       if (this.playerData.state !== GameState.ROLL && this.playerData.state !== GameState.ROLLING
         && this.playerData.state !== GameState.ROLLED) {
         // reset previous round player data
+        this.atomicUpdate = true;
+        this.playerData.bet = null;
         this.playerData.dice = [];
-        return this.updatePlayerData().then(() => {
-          this.playerData.bet = null;
-          this.playerData.dice = [];
-          if (this.playerData.diceNum > 0) {
-            this.playerData.state = GameState.ROLL; // need to roll dice
-          } else {
-            this.playerData.state = GameState.ROLLING; // out of the game, just switch to next state
+        if (this.playerData.diceNum > 0) {
+          this.playerData.state = GameState.ROLL; // need to roll dice
+        } else {
+          this.playerData.state = GameState.ROLLING; // out of the game, just switch to next state
+        }
+        return this.updatePlayersData(this.makePublicPlayerData()).then(() => {
+          return this.updatePlayerData();
+        }).finally(() => {
+          this.atomicUpdate = false;
+          if (this.pendingProcessGameDataChange) {
+            return this.processGameDataChange();
           }
-          return this.updatePlayersData(this.makePublicPlayerData());
         });
       }
       if (this.isHost && this.gameData.winner) {
@@ -92,6 +101,7 @@ export class GameBoardController extends AbstractGameBoardController {
         return this.updatePlayersData(this.makePublicPlayerData());
       }
       if (this.isHost && this.checkAllPlayersRolled()) {
+        this.paranoiaCheckPlayersDataConsistency();   // #DEBUG
         // switch to next game state if all players are in ROLLED state
         this.gameData.gameState = GameState.ROLLED;
         return this.updateGameData();
@@ -122,6 +132,7 @@ export class GameBoardController extends AbstractGameBoardController {
         return this.updatePlayersData(this.makePublicPlayerData(false)); // all players revealed their dice
       }
       if (this.isHost && this.checkAllPlayersRevealed()) {
+        this.paranoiaCheckPlayersDataConsistency();   // #DEBUG
         // switch to next game state if all players in REVEALED state
         this.gameData.gameState = GameState.REVEALED;
         return this.updateGameData();
@@ -137,9 +148,11 @@ export class GameBoardController extends AbstractGameBoardController {
           if (isGoodDudo === true) {
             // Oh, no! dudo was good, we lost a dice
             console.log("* Oh, no! next player dudo was good");    // #DEBUG
+            this.playSound('boo');
             return this.loseDice();
           } else if (isGoodDudo === false) {
             console.log("* Yea! Someone dudoed us and failed");    // #DEBUG
+            this.playSound('wow');
             this.playerData.state = GameState.DONE;
             return this.updatePlayersData(this.makePublicPlayerData(false));
           }
@@ -149,9 +162,11 @@ export class GameBoardController extends AbstractGameBoardController {
           if (dudoRes === false) {
             // Oh, no! dudo was bad, we lost a dice
             console.log("* Oh, no! our dudo was bad.");    // #DEBUG
+            this.playSound('boo');
             return this.loseDice();
           } else if (dudoRes === true) {
             console.log("* Yea! We successfully dodoed someone");    // #DEBUG
+            this.playSound('wow');
             this.playerData.state = GameState.DONE;
             return this.updatePlayersData(this.makePublicPlayerData(false));
           }
@@ -197,6 +212,18 @@ export class GameBoardController extends AbstractGameBoardController {
       return null;
     }
     return this.playerService.getPlayerById(data[0].id);
+  }
+
+  paranoiaCheckPlayersDataConsistency() {
+    this.playersData.forEach(pd => {
+      if ((pd.state === GameState.ROLLING || pd.state === GameState.ROLLED)
+        && pd.dice.length !== pd.diceNum) {
+        throw 'Dice roll info is missing for player id: ' + pd.id + '. This should not happen!';
+      } else if ((pd.state === GameState.REVEALING || pd.state === GameState.REVEALED)
+        && (pd.dice.length !== pd.diceNum || pd.dice.indexOf('?') >= 0)) {
+        throw 'Dice reveal info is missing for player id: ' + pd.id + '. This should not happen!';
+      }
+    });
   }
 
   get canRoll() {
@@ -305,7 +332,7 @@ export class GameBoardController extends AbstractGameBoardController {
     this.watchdogER = this.gameBotService.watchdogCallback('8', (ts) => {  // hack to prevent AI to change the value
       // update UI
       this.watchdogERts = ts;
-    }, this.playerService.player.botMode);
+    }, this.playerData.botMode);
     if (this.watchdogER) {
       console.log("* watchdogEndRound;");    // #DEBUG
       this.watchdogER.then(() => {
@@ -322,17 +349,23 @@ export class GameBoardController extends AbstractGameBoardController {
   endRound() {
     console.log("endRound; selfIndex=" + this.selfIndex);  // #DEBUG
     if(this.gameData.gameState !== GameState.REVEALED || !this.isSelfJustLost){
-      console.log("! endRound; called during wrong state" +
+      throw "! endRound; called during wrong state" +
         "; gameData.gameState=" + this.gameData.gameState +
         "; isSelfJustLost=" + this.isSelfJustLost +
         "; selfIndex=" + this.selfIndex +
-        ". This should not happen!") // #DEBUG
+        ". This should not happen!" // #DEBUG
     }
     if (this.watchdogER) {
       this.gameBotService.watchdogCancel(this.watchdogER);
     }
+    this.stopSound();
+
     // advance player turn
+    const wasTurn = this.gameData.playerTurn;
     this.gameData.playerTurn = this.gameData.nextPlayerTurn;
+    if (this.gameData.playerTurn == null) {
+      throw "! endRound; bad next player turn; null; wasTurn=" + wasTurn + ". This should not happen!";  // #DEBUG
+    }
     // reset last round info
     this.gameData.nextPlayerTurn = null;
     this.gameData.prevLoserIndex = this.gameData.lastLoserIndex;
@@ -342,7 +375,7 @@ export class GameBoardController extends AbstractGameBoardController {
     this.gameData.totalRounds++;
     this.gameData.prompt = null;
     this.gameData.gameState = GameState.ROLL;
-    this.updateGameData();
+    return this.updateGameData();
   }
 
   watchdogRollDice() {
@@ -352,7 +385,7 @@ export class GameBoardController extends AbstractGameBoardController {
     this.watchdogRD = this.gameBotService.watchdogCallback(5, (ts) => {
       // update UI
       this.watchdogRDts = ts;
-    }, this.playerService.player.botMode);
+    }, this.playerData.botMode);
     if (this.watchdogRD) {
       console.log("* watchdogRollDice;");    // #DEBUG
       this.watchdogRD.then(() => {
@@ -364,6 +397,8 @@ export class GameBoardController extends AbstractGameBoardController {
         this.watchdogRDts = null;
         this.watchdogRD = null;
       });
+    } else {
+      this.playSound('dice_roll');
     }
   }
 
@@ -371,17 +406,22 @@ export class GameBoardController extends AbstractGameBoardController {
     if (this.watchdogRD) {
       this.gameBotService.watchdogCancel(this.watchdogRD);
     }
+    this.stopSound('dice_roll');
+
     this.atomicUpdate = true;
+    this.playerData.bet = null;
     this.playerData.dice = [];
     for (let i = 0; i < this.playerData.diceNum; i++) {
       this.playerData.dice.push(Math.floor(Math.random() * 6 + 1))
     }
-    this.updatePlayerData().then(() => {
-      this.playerData.state = GameState.ROLLING;
-      this.playerData.bet = null;
-      this.updatePlayersData(this.makePublicPlayerData());
+    this.playerData.state = GameState.ROLLING;
+    this.updatePlayersData(this.makePublicPlayerData()).then(() => {
+      this.updatePlayerData();
     }).finally(() => {
       this.atomicUpdate = false;
+      if (this.pendingProcessGameDataChange) {
+        return this.processGameDataChange();
+      }
     });
   }
 
@@ -398,20 +438,23 @@ export class GameBoardController extends AbstractGameBoardController {
         this.gameData.lastLoserIndex = this.selfIndex;
         this.gameData.lastLoserStreek = (this.gameData.prevLoserIndex === this.gameData.lastLoserIndex) ? (this.gameData.lastLoserStreek + 1) : 1;
         this.gameData.prompt = `Bet ${this.dudo.bet_num} of ${this.dudo.bet_val}'s, revealed: ${this.dudo.total}.` +
-          ` \"${this.playerService.player.name}\" loses a dice :-(`;
+          ` \"${this.playerService.player.name}\" loses a dice <i class="far fa-sad-tear"></i>`;
         // find next player index turn
         if (this.playerData.diceNum > 0) {
           this.gameData.nextPlayerTurn = this.selfIndex;
         } else {
           this.gameData.nextPlayerTurn = this.findNextGoodPlayerIndex(this.selfIndex);
           if(this.gameData.nextPlayerTurn == null){
-            console.log("! loseDice; bad next player turn; null; wasTurn=" + this.gameData.playerTurn + ". This should not happen!");  // #DEBUG
+            throw "! loseDice; bad next player turn; null; wasTurn=" + this.gameData.playerTurn + ". This should not happen!";  // #DEBUG
           }
         }
-        this.updateGameData();
+        return this.updateGameData();
       })
       .finally(() => {
         this.atomicUpdate = false;
+        if (this.pendingProcessGameDataChange) {
+          return this.processGameDataChange();
+        }
       });
   }
 
@@ -440,7 +483,7 @@ export class GameBoardController extends AbstractGameBoardController {
     this.watchdogMB = this.gameBotService.watchdogCallback(20, (ts) => {
       // update UI
       this.watchdogBMts = ts;
-    }, this.playerService.player.botMode);
+    }, this.playerData.botMode);
     if (this.watchdogMB) {
       console.log("* watchdogMakeBet;");    // #DEBUG
       this.watchdogMB.then(() => {
@@ -464,11 +507,11 @@ export class GameBoardController extends AbstractGameBoardController {
   makeBet(num, val, bot = false) {
     console.log("makeBet; selfIndex=" + this.selfIndex);  // #DEBUG
     if(this.gameData.gameState !== GameState.ROLLED || this.playerData.state !== GameState.TURN){
-      console.log("! makeBet; called during wrong state" +
+      throw "! makeBet; called during wrong state" +
         "; gameData.gameState=" + this.gameData.gameState +
         "; playerData.state=" + this.playerData.state +
         "; selfIndex=" + this.selfIndex +
-        ". This should not happen!"); // #DEBUG
+        ". This should not happen!"; // #DEBUG
     }
     if (this.watchdogMB) {
       this.gameBotService.watchdogCancel(this.watchdogMB);
@@ -490,13 +533,16 @@ export class GameBoardController extends AbstractGameBoardController {
         const wasTurn = this.gameData.playerTurn;  // #DEBUG
         this.gameData.playerTurn = this.findNextGoodPlayerIndex(this.gameData.playerTurn);
         if(this.gameData.playerTurn == null){
-          console.log("! makeBet; bad next player turn; null; wasTurn=" + wasTurn + ". This should not happen!");  // #DEBUG
+          throw "! makeBet; bad next player turn; null; wasTurn=" + wasTurn + ". This should not happen!";  // #DEBUG
         }
         this.gameData.lastRoundLength++;
-        this.updateGameData();
+        return this.updateGameData();
       })
       .finally(() => {
         this.atomicUpdate = false;
+        if (this.pendingProcessGameDataChange) {
+          return this.processGameDataChange();
+        }
       });
   }
 
@@ -514,10 +560,13 @@ export class GameBoardController extends AbstractGameBoardController {
     return this.updatePlayersData(this.makePublicPlayerData())
       .then(() => {
         this.gameData.gameState = GameState.REVEAL;
-        this.updateGameData();
+        return this.updateGameData();
       })
       .finally(() => {
         this.atomicUpdate = false;
+        if (this.pendingProcessGameDataChange) {
+          return this.processGameDataChange();
+        }
       });
   }
 

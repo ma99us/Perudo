@@ -1,7 +1,7 @@
-<div class="card offset-lg-3 col-lg-6">
+<div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
-        <h1>GAME OVER</h1>
-        (game id: {{$ctrl.game.id}})
+        <h1><i class="fas fa-clipboard-list"></i> GAME OVER</h1>
+        (Game id: {{$ctrl.game.id}})
     </div>
     <div class="card-body container text-center">
         <div ng-if="$ctrl.game.state === 'FINISHED'">
@@ -10,17 +10,17 @@
                 <lobby-player player="$ctrl.gameData.winner"></lobby-player>
                 with {{$ctrl.gameData.winnerDiceLeft}} dice left.
             </h2>
-            <h3>GG.</h3>
+            <h3>GG. <i style="color: #FFD700" class="fas fa-trophy glow-black"></i></h3>
         </div>
     </div>
     <div class="text-center">
         <button ng-if="$ctrl.game.state === 'FINISHED'"
                 ng-click="$ctrl.game.goHome()">
-            Go Home
+            <i class="fas fa-house-user"></i> Go Home
         </button>
         <button ng-if="$ctrl.game.state === 'FINISHED'"
                 ng-click="$ctrl.newLobby()">
-            Play Again
+            <i class="fas fa-play-circle"></i> Play Again
         </button>
     </div>
 </div>

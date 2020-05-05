@@ -12,24 +12,23 @@ export class AbstractGameBoardController {
     this.playerData = null;   // local data of this player (it has the same 'id' as a PlayerService.player.id)
     this.playersData = [];   // data revealed by each player (all players dice)
     this.gameData = null;   // data revealed on the board for everyone (contains current game state (one of the GameState constants))
+    this.isReady = false;   // set to true once this.onOpened() finishes
   }
 
   $onInit() {
-    console.log(`* Initializing Game Board; game=${this.game.gameName}"; id=${this.game.id}; `+
-      `Player=${this.playerService.player.name} id=${this.playerService.player.id}; `+
-      `isHost=${this.playerService.isHost} ; isSpectator=${this.playerService.isSpectator}; isBot=${this.playerService.isBot}`);
+    console.log(`* Initializing Game Board; game=${this.game.gameName}"; id=${this.game.id}... `);
 
     this.gameDbListener = this.messageBusService.on("db-event", (event, data) => {
       //console.log("db-event: " + JSON.stringify(data));
       if (data.key === 'playersData') {
-        this.getPlayersData().then(() => {
-          this.processGameDataChange();
-        });
+        console.log("on \"playersData\" db-event; " + JSON.stringify(data.value));   // #DEBUG
+        this.mergePlayersData(data.value);
+        this.processGameDataChange();
       }
       else if (data.key === 'gameData') {
-        this.getGameData().then(() => {
-          this.processGameDataChange();
-        });
+        console.log("on \"gameData\" db-event; " + JSON.stringify(data.value));   // #DEBUG
+        this.gameData = data.value;
+        this.processGameDataChange();
       }
     });
     this.gameEventListener = this.messageBusService.on('game-event', (event, data) => {
@@ -63,11 +62,13 @@ export class AbstractGameBoardController {
         return this.getGameData();    // get global game state and data
       })
       .then(() => {
-        this.processGameDataChange();
-      })
-      .then(() => {
+        this.isReady = true;
         console.log("Game synchronized");  // #DEBUG
         this.alertService.message();
+        console.log(`* Initialized Game Board; game=${this.game.gameName}"; id=${this.game.id}; `+
+          `Player=${this.playerService.player.name} id=${this.playerService.player.id}; `+
+          `isHost=${this.playerService.isHost} ; isSpectator=${this.playerService.isSpectator}; isBot=${this.playerService.isBot}`);
+        this.processGameDataChange();
       })
       .catch((err) => {
         this.alertService.error(err);
@@ -103,7 +104,7 @@ export class AbstractGameBoardController {
   }
 
   get isHost() {
-    return this.playerService.player.isHost;
+    return this.playerService.isHost;
   }
 
   get selfIndex() {
@@ -173,11 +174,14 @@ export class AbstractGameBoardController {
   getPlayerData() {
     const promise = this.hostStorageService.get(".playerData-" + this.playerService.player.id).then(data => {
       if(data && data.botMode){
-        this.playerService.player.botMode = data.botMode;
+        this.playerData.botMode = data.botMode;
       } else if (this.playerService.isBot) {
-        this.playerService.player.botMode = this.gameBotService.BotMode.Ian;
-      } else if(!this.playerService.player.botMode){
-        this.playerService.player.botMode = this.gameBotService.BotMode.Kevin;
+        this.playerData.botMode = this.gameBotService.BotMode.Ian;
+      } else if(!this.playerData.botMode){
+        this.playerData.botMode = this.gameBotService.BotMode.Kevin;
+      }
+      if (data && data.soundMute != null) {
+        this.game.isSoundMuted = data.soundMute;
       }
       return data;  // resolve next .then with the same data
     });
@@ -189,7 +193,8 @@ export class AbstractGameBoardController {
 
   updatePlayerData(playerData) {
     playerData.id = playerData.id || this.playerService.player.id;
-    playerData.botMode = playerData.botMode || this.playerService.player.botMode;
+    playerData.botMode = playerData.botMode || this.playerData.botMode;
+    playerData.soundMute = playerData.soundMute != null ? playerData.soundMute : this.game.isSoundMute;
     const key = ".playerData-" + this.playerService.player.id;
     console.log(`++ updating DB "${key}": ${JSON.stringify(playerData)}`);  // #DEBUG
     return this.hostStorageService.update(key, playerData).catch(err => {
@@ -213,6 +218,15 @@ export class AbstractGameBoardController {
       return null;
     }
     return this.playersData.find((p) => p.id === player.id);
+  }
+
+  mergePlayersData(playersData) {
+    let idx = this.playersData.findIndex(pd => pd.id === playersData.id);
+    if (idx >= 0) {
+      this.playersData[idx] = playersData;
+    } else if(playersData.id) {
+      this.playersData.push(playersData);
+    }
   }
 
   getPlayersData(initPlayersData) {
@@ -250,6 +264,11 @@ export class AbstractGameBoardController {
     this.game.updateState('FINISHED');
   }
 
+  soundMuteToggle(){
+    this.game.soundMuteToggle();
+    this.updatePlayerData();
+  }
+
   updateBotMode(mode) {
     if (this.watchdogRD) {
       this.gameBotService.watchdogCancel(this.watchdogRD);
@@ -264,9 +283,7 @@ export class AbstractGameBoardController {
       this.watchdogER = null;
     }
 
-    this.playerService.player.botMode = mode;
-
-    this.playerData.botMode = this.playerService.player.botMode;
+    this.playerData.botMode = mode;
     this.updatePlayerData();
 
     this.processGameDataChange();
@@ -276,7 +293,39 @@ export class AbstractGameBoardController {
     return Math.floor(Math.random() * (to + 1 - from) + from);
   }
 
+  playSound(soundName) {
+    if (this.playerService.isBot) {
+      return;
+    }
+    this.game.playSound(soundName);
+  }
+
+  stopSound(soundName = null) {
+    if (this.playerService.isBot) {
+      return;
+    }
+    this.game.stopSound(soundName);
+  }
+
+  removeGamePlayer(player){
+    return this.hostStorageService.delete("playersData", player.id).then(data => {
+      return this.playerService.removePlayers(player);
+    }).catch(err => {
+      this.alertService.error(err);
+    })
+
+  }
+
   /** DEBUG ONLY! **/
+
+  debugDumpAllGameData() {
+    let dumpStr = "*** gameData:\n" + JSON.stringify(this.gameData, null, '  ');
+    dumpStr += "\n*** all playersData:\n" + JSON.stringify(this.playersData, null, '  ');
+    dumpStr += "\n*** self playerData:\n" + JSON.stringify(this.playerData, null, '  ');
+    dumpStr += "\n*** self player:\n" + JSON.stringify(this.playerService.player, null, '  ');
+    console.log(dumpStr);
+    this.alertService.showPopup('! DEBUG GAME STATE !', dumpStr);
+  }
 
   debugRestartGame() {
     this.alertService.message();
@@ -310,6 +359,6 @@ export class AbstractGameBoardController {
     if (!p) {
       throw 'No such player';
     }
-    return this.playerService.removePlayers(p);
+    return this.removeGamePlayer(p);
   }
 }

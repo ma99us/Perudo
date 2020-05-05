@@ -1,12 +1,13 @@
 <div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
         <h1><i class="fas fa-users"></i> GAME LOBBY</h1>
-        (game id: {{$ctrl.game.id}})
+        (Game id: {{$ctrl.game.id}})
     </div>
     <div class="card-body">
         <div class="info text-info text-center" ng-show="$ctrl.game.playerService.players">
+            <span class="font-weight-bolder text-uppercase">{{$ctrl.game.gameName}}</span>.
             {{$ctrl.game.playerService.players.length}}
-            player{{$ctrl.game.players.length !==1 ? 's' : ''}}
+            player{{$ctrl.game.playerService.players.length !== 1 ? 's' : ''}}
         </div>
         <div class="vertical-scroll">
             <p class="text-center" ng-show="!$ctrl.game.playerService.players || $ctrl.game.playerService.players.length === 0">
@@ -20,8 +21,8 @@
                         </div>
                         <div class="col-sm-4 text-nowrap" ng-show="$ctrl.game.playerService.player.isHost">-
                             <button ng-click="$ctrl.removePlayer(p)"><i class="fas fa-user-slash"></i></button>
-                            <button ng-click="$ctrl.moveUpPlayers(p)"><i class="fas fa-chevron-up"></i></button>
-                            <button ng-click="$ctrl.moveDownPlayers(p)"><i class="fas fa-chevron-down"></i></button>
+                            <button ng-disabled="!$ctrl.canMoveUp($index)" ng-click="$ctrl.moveUpPlayers(p)"><i class="fas fa-chevron-up"></i></button>
+                            <button ng-disabled="!$ctrl.canMoveDown($index)" ng-click="$ctrl.moveDownPlayers(p)"><i class="fas fa-chevron-down"></i></button>
                         </div>
                     </div>
                 </li>

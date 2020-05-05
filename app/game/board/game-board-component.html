@@ -1,6 +1,6 @@
 <div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
-        <h1><i class="fas fa-dice"></i> NO-NONSENSE PERUDO</h1>
+        <h1><i class="fas fa-dice"></i> NO-NONSENSE {{$ctrl.game.gameName | uppercase}}</h1>
         <!--(game id: {{$ctrl.game.id}})-->
     </div>
     <div class="card-body">
@@ -37,12 +37,12 @@
             </li>
         </ul>
         <div class="card text-center">
-            <h6 ng-show="$ctrl.diceInPlay > 0">Total dice in play: {{$ctrl.diceInPlay}}</h6>
+            <h6 ng-show="$ctrl.diceInPlay > 0">Total {{$ctrl.diceInPlay}} dice in play.</h6>
             <h4 ng-show="$ctrl.gameData.prompt" ng-bind-html="$ctrl.gameData.prompt"></h4>
             <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
-                <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <i class="far fa-heart"></i></h5>
-                <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice.</h6>
                 <h5 ng-show="$ctrl.playerData.diceNum === 1">You have the last dice. Make it count!</h5>
+                <h5 ng-show="$ctrl.gameData.totalRounds === 0">GLHF <i class="far fa-heart"></i></h5>
                 <button ng-click="$ctrl.rollDice()">
                     <i class="fas fa-dice"></i> Roll Dice
                 </button>
@@ -92,55 +92,81 @@
         </div>
     </div>
     <div class="card-footer text-center">
-        <div class="text-right">
-            <label for="bot-controls">AI controls:</label>
-            <div id="bot-controls" class="btn-group" role="group" aria-label="AI controls:">
+        <div class="row">
+            <div class="div-thin text-left col-4">
+                <button ng-show="$ctrl.playerService.isSpectator"
+                        ng-click="$ctrl.removeGamePlayer($ctrl.playerService.player)">
+                    <i class="fas fa-user-slash"></i> Leave Game
+                </button>
+                <!-- MINIMAL DEBUG! -->
+                <button class="btn btn-outline-warning btn-sm" ng-click="$ctrl.debugDumpAllGameData()">
+                    !DEBUG!
+                </button>
+            </div>
+            <div class="div-thin text-right col-8">
+                <label class="small" for="sound-controls">Sounds:</label>
+                <button id="sound-controls" type="button" class="btn btn-outline-secondary btn-sm"
+                        ng-click="$ctrl.soundMuteToggle()">
+                    <i ng-class="$ctrl.game.isSoundMute ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
+                </button>
+                <span ng-show="!$ctrl.playerService.isSpectator">
+            |
+            <label class="small" for="bot-controls">Automation:</label>
+            <div id="bot-controls" class="btn-group div-thin" role="group" aria-label="AI controls:">
                 <button type="button" class="btn btn-outline-secondary btn-sm"
-                        ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.None ? 'active' :''"
+                        ng-class="$ctrl.playerData.botMode === $ctrl.gameBotService.BotMode.None ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.None)">
-                    No AI
+                    Off
                 </button>
                 <button type="button" class="btn btn-outline-secondary btn-sm"
-                        ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.Kevin ? 'active' :''"
+                        ng-class="$ctrl.playerData.botMode === $ctrl.gameBotService.BotMode.Kevin ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Kevin)">
                     Mellow Kevin
                 </button>
                 <button type="button" class="btn btn-outline-secondary btn-sm"
-                        ng-class="$ctrl.playerService.player.botMode === $ctrl.gameBotService.BotMode.Ian ? 'active' :''"
+                        ng-class="$ctrl.playerData.botMode === $ctrl.gameBotService.BotMode.Ian ? 'active' :''"
                         ng-click="$ctrl.updateBotMode($ctrl.gameBotService.BotMode.Ian)">
                     Crazy Ian
                 </button>
             </div>
+            </span>
+            </div>
         </div>
-        <div ng-if="$ctrl.playerService.player.name.indexOf('Red Dragon') >=0" class="bg-warning">
-            <!-- DEBUG ONLY! -->
-            <h6>*** DEBUG CONSOLE ***</h6>
-            <p>Game id: {{$ctrl.game.id}}</p>
-            <p>Player: "{{$ctrl.playerService.player.name}}", id: {{$ctrl.playerService.player.id}}</p>
-            <p>Game state: {{$ctrl.gameData.gameState}}, Player state: {{$ctrl.playerData.state}}</p>
-            <button ng-click="$ctrl.debugDumpAllGameData()">!DUMP GAME STATE!</button>
-            <button ng-click="$ctrl.finishGame()">
-                !EXIT GAME!
+        <div ng-if="$ctrl.playerService.player.name.indexOf('Red Dragon') >=0">
+            <!-- FULL DEBUG! -->
+            <button class="btn btn-outline-warning btn-sm" type="button" data-toggle="collapse" data-target="#debug-console" aria-expanded="false" aria-controls="debug-console">
+                *** DEBUG CONSOLE ***
             </button>
-            <button ng-click="$ctrl.debugResetToLastRound()">
-                !LAST ROUND!
-            </button>
-            <button ng-click="$ctrl.debugRestartGame()">
-                !RESTART GAME!
-            </button><br/>
-            <input type="number" min="0" ng-model="$ctrl.debugResetTurnNum" style="width: 4em;">
-            <button ng-click="$ctrl.debugResetTurn($ctrl.debugResetTurnNum)">
-                !RESET TURN!
-            </button>
-            <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToKick">
-            <button ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
-                !KICK PLAYER!
-            </button><br/>
-            <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToEdit">
-            <input type="text" size="6" ng-model="$ctrl.debugPlayerState">
-            <button ng-click="$ctrl.debugChangePlayerStateByName($ctrl.debugPlayerNameToEdit, $ctrl.debugPlayerState)">
-                !CHANGE PLAYER STATE!
-            </button>
+            <div id="debug-console" class="collapse bg-warning">
+                <p>Game id: {{$ctrl.game.id}}</p>
+                <p>Player: "{{$ctrl.playerService.player.name}}", id: {{$ctrl.playerService.player.id}}</p>
+                <p>Game state: {{$ctrl.gameData.gameState}}, Player state: {{$ctrl.playerData.state}}</p>
+                <button ng-click="$ctrl.debugDumpAllGameData()">!DUMP GAME STATE!</button>
+                <button ng-click="$ctrl.finishGame()">
+                    !EXIT GAME!
+                </button>
+                <button ng-click="$ctrl.debugResetToLastRound()">
+                    !LAST ROUND!
+                </button>
+                <button ng-click="$ctrl.debugRestartGame()">
+                    !RESTART GAME!
+                </button>
+                <br/>
+                <input type="number" min="0" ng-model="$ctrl.debugResetTurnNum" style="width: 4em;">
+                <button ng-click="$ctrl.debugResetTurn($ctrl.debugResetTurnNum)">
+                    !RESET TURN!
+                </button>
+                <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToKick">
+                <button ng-click="$ctrl.debugKickPlayerByName($ctrl.debugPlayerNameToKick)">
+                    !KICK PLAYER!
+                </button>
+                <br/>
+                <input type="text" size="20" ng-model="$ctrl.debugPlayerNameToEdit">
+                <input type="text" size="6" ng-model="$ctrl.debugPlayerState">
+                <button ng-click="$ctrl.debugChangePlayerStateByName($ctrl.debugPlayerNameToEdit, $ctrl.debugPlayerState)">
+                    !CHANGE PLAYER STATE!
+                </button>
+            </div>
         </div>
     </div>
 </div>

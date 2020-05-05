@@ -19,6 +19,14 @@ export class LobbyController {
   $onDestroy() {
   }
 
+  canMoveUp(idx) {
+    return idx > 1;
+  }
+
+  canMoveDown(idx) {
+    return idx > 0 && idx < this.game.playerService.players.length - 1;
+  }
+
   moveUpPlayers(p) {
     let pIndex = this.game.playerService.getPlayerIndex(p);
     let insIndex = this.game.playerService.getPrevPlayerIndex(pIndex);
@@ -36,7 +44,7 @@ export class LobbyController {
   }
 
   leaveGame() {
-    this.game.playerService.removePlayers(this.game.playerService.player);
+    this.removePlayer(this.game.playerService.player);
   }
 
   addBotPlayer(){
@@ -44,6 +52,10 @@ export class LobbyController {
   }
 
   removePlayer(player) {
+    if (player.id === this.game.playerService.player.id) {
+      // remove all bots also
+      this.gameBotService.removeBotPlayer();
+    }
     this.gameBotService.removeBotPlayer(player);  // also removes regular players
   }
 }

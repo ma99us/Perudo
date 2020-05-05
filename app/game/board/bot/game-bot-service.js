@@ -88,12 +88,21 @@ export class GameBotService {
     return this.playerService.updatePlayers(botPlayer);
   }
 
-  removeBotPlayer(player) {
-    const idx = this.botPlayerServices.findIndex(ps => ps.player.id === player.id);
-    if (idx >= 0) {
-      const delPs = this.botPlayerServices.splice(idx, 1);
-      delPs[0].unloadPlayer();
+  removeBotPlayer(player = null) {
+    if(!player){
+      this.botPlayerServices.forEach(ps => {
+        this.playerService.removePlayers(ps.player).then(() => {
+          ps.player.unloadPlayer();
+        });
+      });
+      this.botPlayerServices = [];
+    } else {
+      const idx = this.botPlayerServices.findIndex(ps => ps.player.id === player.id);
+      if (idx >= 0) {
+        const delPs = this.botPlayerServices.splice(idx, 1);
+        delPs[0].unloadPlayer();
+      }
+      return this.playerService.removePlayers(player);
     }
-    return this.playerService.removePlayers(player);
   }
 }

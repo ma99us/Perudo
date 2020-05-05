@@ -7,7 +7,7 @@
             </p>
         </div>
         <div>
-            <input id="say" type="text" size="40" placeholder="say something" ng-model="$ctrl.txt"
+            <input id="say" type="text" size="40" autocomplete="off" placeholder="say something" ng-model="$ctrl.txt"
                    ng-keypress="$ctrl.sendOnEnterKey($event, $ctrl.txt)">
             <button ng-disabled="!$ctrl.hostStorageService.sessionId" ng-click="$ctrl.sendMessage($ctrl.txt)"><i class="fas fa-comment-dots"></i></button>
         </div>

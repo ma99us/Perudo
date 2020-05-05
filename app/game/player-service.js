@@ -73,6 +73,12 @@ export class PlayerService {
   getPlayers() {
     return this.hostStorageService.get("players").then(data => {
       this.players = ((!Array.isArray(data) && data !== null) ? [data] : data) || []; // should always be an array
+      let selfPlayer = this.getPlayerById(this.player.id);
+      if (selfPlayer) {
+        this.player.isHost = selfPlayer.isHost != null ? selfPlayer.isHost : this.player.isHost;
+        this.player.spectator = selfPlayer.spectator != null ? selfPlayer.spectator : this.player.spectator;
+        this.player.bot = selfPlayer.bot != null ? selfPlayer.bot : this.player.bot;
+      }
     }).catch(err => {
       this.alertService.error(err);
     })

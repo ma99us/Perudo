@@ -12,7 +12,9 @@
     "angular-resource": "^1.7.5",
     "angular-sanitize": "^1.7.5",
     "angular-websocket": "2.0.1",
+    "angular-ui-bootstrap": "^2.5.6",
     "html5-boilerplate": "0.0.1",
+    "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",
     "bootstrap": "^4.2.1"
   },
@@ -31,7 +33,7 @@
     "postinstall": "npm run copy-libs",
     "update-deps": "npm update",
     "postupdate-deps": "npm run copy-libs",
-    "copy-libs": "cpx \"node_modules/{angular,angular-loader,angular-route,angular-resource,angular-sanitize,angular-websocket/dist,html5-boilerplate/dist,jquery/dist,bootstrap/dist}/**/*\" app/lib -C",
+    "copy-libs": "cpx \"node_modules/{angular,angular-loader,angular-route,angular-resource,angular-sanitize,angular-websocket/dist,angular-ui-bootstrap/dist,html5-boilerplate/dist,jquery/dist,bootstrap/dist}/**/*\" app/lib -C",
     "prestart": "npm install --experimental-modules",
     "start": "http-server -a localhost -p 8000 -c-1 ./app",
     "pretest": "npm install",

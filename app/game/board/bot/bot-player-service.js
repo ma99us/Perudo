@@ -26,7 +26,8 @@ export class BotPlayerService extends PlayerService{
       id: id,
       name: name,
       color: 'black',
-      bot: true
+      bot: true,
+      sessionId: this.hostStorageService.sessionId
     };
     return this.player;
   }

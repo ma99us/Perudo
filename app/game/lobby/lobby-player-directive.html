@@ -1,6 +1,7 @@
 <div style="vertical-align: middle;">
     <strong ng-if="!$ctrl.isSpectator()"
             ng-class="$ctrl.isMuted() ? 'del' : ''"
+            ng-style="$ctrl.isMuted() ? {'opacity': '0.5'} : {}"
             style="color: {{$ctrl.player.color}}">
         {{$ctrl.player.name}}
     </strong>
@@ -8,5 +9,6 @@
     <i ng-if="$ctrl.isBot() && !$ctrl.isMuted()" style="color: {{$ctrl.player.color}}" class="fas fa-robot"></i>
     <i ng-if="$ctrl.isHost()" class="fas fa-server"></i>
     <i ng-if="$ctrl.isSpectator()" class="far fa-eye"></i>
-    <i ng-if="$ctrl.isMuted()" style="color: {{$ctrl.player.color}}" class="fas fa-ghost"></i>
+    <i ng-if="$ctrl.isMuted()" style="color: {{$ctrl.player.color}}; opacity: 0.5;" class="fas fa-ghost"></i>
+    <i ng-if="$ctrl.isDisconnected()" style="color: red" class="fas fa-virus-slash"></i>
 </div>

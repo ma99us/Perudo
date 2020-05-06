@@ -19,7 +19,7 @@
                     <div class="col-2 text-nowrap">
                         <p ng-show="($ctrl.gameData.gameState === 'ROLLED'
                         || ($ctrl.gameData.gameState === 'REVEALED' && $index !== $ctrl.gameData.playerTurn))
-                        && $ctrl.findPlayersData(p).bet">
+                        && $ctrl.findPlayersData(p).bet.num">
                             <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
                                 Bet: {{$ctrl.findPlayersData(p).bet.num}} of {{$ctrl.findPlayersData(p).bet.val}}'s
                                 <span ng-show="$ctrl.findPlayersData(p).bet.bot"> <i class="fas fa-robot"></i></span>
@@ -39,6 +39,7 @@
         <div class="card text-center">
             <h6 ng-show="$ctrl.diceInPlay > 0">Total {{$ctrl.diceInPlay}} dice in play.</h6>
             <h4 ng-show="$ctrl.gameData.prompt" ng-bind-html="$ctrl.gameData.prompt"></h4>
+            <h5 ng-show="$ctrl.gameData.promptSub" ng-bind-html="$ctrl.gameData.promptSub" class="text-info"></h5>
             <div ng-if="$ctrl.gameData.gameState === 'ROLL' && $ctrl.canRoll">
                 <h6 ng-show="$ctrl.playerData.diceNum > 1">You have {{$ctrl.playerData.diceNum}} dice.</h6>
                 <h5 ng-show="$ctrl.playerData.diceNum === 1">You have the last dice. Make it count!</h5>

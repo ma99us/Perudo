@@ -47,12 +47,13 @@ export class GameController {
     });
     this.mbsEventsListener = this.messageBusService.on("session-event", (event, data) => {
       //console.log("session-event: " + JSON.stringify(data));    // #DEBUG
-      if(data.event === 'OPENED' && data.sessionId === this.hostStorageService.sessionId){
+      if (data.event === 'OPENED' && data.sessionId === this.hostStorageService.sessionId) {
         this.onOpened();
       } else if (data.event === 'ERROR') {
         this.alertService.error(data.message);
       } else if (data.event === 'CLOSED') {
         this.alertService.warning(data.message);
+        this.playerService.onSessionClosed(data.sessionId);
       }
     });
     // this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
@@ -71,10 +72,10 @@ export class GameController {
   $onDestroy() {
     this.hostStorageService.disconnect();
 
-    if(this.mbsDbListener){
+    if (this.mbsDbListener) {
       this.mbsDbListener();
     }
-    if(this.mbsEventsListener){
+    if (this.mbsEventsListener) {
       this.mbsEventsListener();
     }
     // if(this.mbsMessagesListener){
@@ -82,6 +83,7 @@ export class GameController {
     // }
 
     this.unregisterLobby();
+    this.gameBotService.removeBotPlayer();
     this.playerService.unloadPlayer();
   }
 
@@ -95,11 +97,13 @@ export class GameController {
         return this.getPlayers();
       })
       .then(() => {
-        if (!this.playerService.player.inLobby) {
-          this.playerService.player.spectator = !(!this.state || this.state === 'LOBBY');
-          this.playerService.player.sessionId = this.hostStorageService.sessionId;
-          return this.playerService.updatePlayers(this.playerService.player);
+        if (!this.playerService.player.inLobby && this.state && this.state !== 'LOBBY') {
+          this.playerService.player.spectator = true;
+        } else {
+          this.playerService.player.spectator = false;
         }
+        this.playerService.player.sessionId = this.hostStorageService.sessionId;
+        return this.playerService.updatePlayers(this.playerService.player);
       })
       .catch(err => {
         this.alertService.error(err);
@@ -132,7 +136,7 @@ export class GameController {
     if (!this.playerService.player.inLobby && idx >= 0) { // was not in game, but now is
       this.playerService.player.inLobby = true;
       this.registerLobby();
-    } else if(this.playerService.player.inLobby && idx < 0){ // was in game, but now is not
+    } else if (this.playerService.player.inLobby && idx < 0) { // was in game, but now is not
       this.playerService.player.inLobby = false;
       this.goHome();
       return false;
@@ -144,19 +148,19 @@ export class GameController {
     let stateUpdated = false;
     return this.hostStorageService.get("state")
       .then(data => {
-      this.alertService.message();
+        this.alertService.message();
         if (this.state !== data) {
           this.state = data;
           stateUpdated = true;
         }
       })
       .then(() => {
-        if(stateUpdated){
+        if (stateUpdated) {
           return this.hostStorageService.get("lastStateUpdate")
         }
       })
       .then(data => {
-        if(stateUpdated && data){
+        if (stateUpdated && data) {
           this.lastStateUpdate = new Date(data);
         }
       })
@@ -167,14 +171,14 @@ export class GameController {
       })
       .catch(err => {
         this.alertService.error(err);
-    })
+      })
   }
 
   updateState(state) {
     let stateUpdated = this.state !== state;
     return this.hostStorageService.update("state", state).then(data => {
       this.alertService.message();
-      if(stateUpdated){
+      if (stateUpdated) {
         let lastStateUpdate = new Date();
         return this.hostStorageService.update("lastStateUpdate", lastStateUpdate.getTime());
       }
@@ -229,8 +233,8 @@ export class GameController {
     }
     this.lobbyService.lobby.playersNum = this.playerService.players.length;
     this.lobbyService.lobby.host = this.playerService.player.name;
-    this.lobbyService.lobby.state =  this.state;
-    this.lobbyService.lobby.lastStateUpdate =  this.lastStateUpdate;
+    this.lobbyService.lobby.state = this.state;
+    this.lobbyService.lobby.lastStateUpdate = this.lastStateUpdate;
     return this.lobbyService.updateLobby();
   }
 
@@ -265,7 +269,7 @@ export class GameController {
     });
   }
 
-  stopSound(soundName = null){
+  stopSound(soundName = null) {
     if (!soundName) {
       Object.keys(this.sounds).map((key, index) => {
         if (this.sounds[key]) {
@@ -285,7 +289,7 @@ export class GameController {
     }
   }
 
-  soundMuteToggle(){
+  soundMuteToggle() {
     this.isSoundMuted = !this.isSoundMuted;
     if (this.isSoundMuted) {
       this.stopSound();

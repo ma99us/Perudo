@@ -20,6 +20,7 @@ export class PlayerService {
   unloadPlayer(){
     this.player = null;
     this.isReady = false;
+    this.players = [];
   }
 
   get isHost() {
@@ -96,5 +97,15 @@ export class PlayerService {
     }).catch(err => {
       this.alertService.error(err);
     })
+  }
+
+  onSessionClosed(sessionId) {
+    const players = this.players.filter(p => p.sessionId === sessionId);
+    if (players) {
+      players.forEach(p => {
+        p.sessionId = null;
+        this.updatePlayers(p);
+      });
+    }
   }
 }

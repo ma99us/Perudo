@@ -64,7 +64,8 @@ export class GameBotService {
     const botIds = this.botPlayerServices.map(ps => ps.player.id);
     botPlayerIds.forEach(botId => {
       if (botIds.indexOf(botId) < 0) {
-        this.initBotPlayer(botId);
+        const botPlayer = this.initBotPlayer(botId);
+        this.playerService.updatePlayers(botPlayer);
       }
     });
     // since bots do not call getPlayers, we need to update players lists manually in each bot player service
@@ -92,7 +93,7 @@ export class GameBotService {
     if(!player){
       this.botPlayerServices.forEach(ps => {
         this.playerService.removePlayers(ps.player).then(() => {
-          ps.player.unloadPlayer();
+          ps.unloadPlayer();
         });
       });
       this.botPlayerServices = [];

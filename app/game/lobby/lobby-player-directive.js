@@ -35,6 +35,11 @@ export function LobbyPlayerDirective() {
       this.isBot = function() {
         return this.player && this.player.bot;
       };
+
+      this.isDisconnected = function() {
+        return this.player && !this.player.sessionId;
+      };
+
     }
   };
 }

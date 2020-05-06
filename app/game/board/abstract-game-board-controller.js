@@ -221,6 +221,10 @@ export class AbstractGameBoardController {
   }
 
   mergePlayersData(playersData) {
+    if(!playersData.id || !this.playerService.getPlayerById(playersData.id)){
+      console.log("! mergePlayersData; unexpected players data: " + JSON.stringify(playersData)); // #DEBUG
+      return;
+    }
     let idx = this.playersData.findIndex(pd => pd.id === playersData.id);
     if (idx >= 0) {
       this.playersData[idx] = playersData;
@@ -322,6 +326,7 @@ export class AbstractGameBoardController {
     let dumpStr = "*** gameData:\n" + JSON.stringify(this.gameData, null, '  ');
     dumpStr += "\n*** all playersData:\n" + JSON.stringify(this.playersData, null, '  ');
     dumpStr += "\n*** self playerData:\n" + JSON.stringify(this.playerData, null, '  ');
+    dumpStr += "\n*** all players:\n" + JSON.stringify(this.playerService.players, null, '  ');
     dumpStr += "\n*** self player:\n" + JSON.stringify(this.playerService.player, null, '  ');
     console.log(dumpStr);
     this.alertService.showPopup('! DEBUG GAME STATE !', dumpStr);

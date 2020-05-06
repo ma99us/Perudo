@@ -1,11 +1,11 @@
 <div class="card offset-xl-3 col-xl-6">
     <div class="card-header text-center">
-        <h1><i class="fas fa-clipboard-list"></i> GAME OVER</h1>
+        <h1><i class="fas fa-clipboard-list"></i> {{$ctrl.game.gameName | uppercase}} GAME OVER</h1>
         (Game id: {{$ctrl.game.id}})
     </div>
     <div class="card-body container text-center">
         <div ng-if="$ctrl.game.state === 'FINISHED'">
-            <small ng-show="$ctrl.playedAt">Finished at {{$ctrl.playedAt | date:'medium'}}</small>
+            <small ng-show="$ctrl.playedAt">Finished on {{$ctrl.playedAt | date:'medium'}}</small>
             <h2>Winner is
                 <lobby-player player="$ctrl.gameData.winner"></lobby-player>
                 with {{$ctrl.gameData.winnerDiceLeft}} dice left.

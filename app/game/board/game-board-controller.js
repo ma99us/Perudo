@@ -301,19 +301,38 @@ export class GameBoardController extends AbstractGameBoardController {
     }
   }
 
-  getDice(player, pIndex, dIndex) {
+  buildPlayersUI(){
+    if (!this.playerUI) {
+      this.playerUI = [];
+    }
+    this.playerUI.length = this.playerService.players.length;
+    this.playerService.players.forEach((p, pIndex) => {
+      this.buildPlayerUI(p, pIndex);
+    });
+    return this.playerUI;
+  }
+
+  buildPlayerUI(player, pIndex) {
     const playerData = player.id === this.playerService.player.id ? this.playerData : this.findPlayersData(player);
     if (!playerData) {
       return null;
     }
-    let val = (playerData && dIndex < playerData.dice.length) ? playerData.dice[dIndex] : null;
-    // store dice UI into local temporary cache
-    if (!this.playerUI) {
-      this.playerUI = {};
-    }
     if (!this.playerUI[pIndex]) {
       this.playerUI[pIndex] = {};
     }
+    this.playerUI[pIndex].playerUI = player;
+    this.playerUI[pIndex].diceNumUI = playerData.diceNum;
+    this.playerUI[pIndex].betUI = playerData.bet;
+    this.playerUI[pIndex].stateUI = playerData.state;
+    for (let dIndex = 0; dIndex < 5; dIndex++) {
+      this.buildDiceUI(player, playerData, pIndex, dIndex);
+    }
+    return this.playerUI[pIndex];
+  }
+
+  buildDiceUI(player, playerData, pIndex, dIndex){
+    // store dice UI into local temporary cache
+    let val = (playerData && dIndex < playerData.dice.length) ? playerData.dice[dIndex] : null;
     if (!this.playerUI[pIndex].diceUI) {
       this.playerUI[pIndex].diceUI = [];
     }
@@ -325,7 +344,6 @@ export class GameBoardController extends AbstractGameBoardController {
     const isDiceMatch = (this.gameData && this.gameData.lastBet) ? (val === this.gameData.lastBet.val || val === 1) : false;
     this.playerUI[pIndex].diceUI[dIndex].mark = val && this.gameData && this.gameData.gameState === GameState.REVEALED && isDiceMatch;
     this.playerUI[pIndex].diceUI[dIndex].mute = val == null;
-    this.playerUI[pIndex].bet = playerData.bet;
     return this.playerUI[pIndex].diceUI[dIndex];
   }
 
@@ -754,6 +772,8 @@ export class GameBoardController extends AbstractGameBoardController {
       }
       let selfLastBetNum = lastBet ? selfDice.reduce((total, d) => ((d === lastBet.val || d === 1) ? total + 1 : total), 0) : 0;
       let minValNum = this.perudoFindMinLegalNumForVal(lastBet, maxVal);
+      const minWeight = 1.3;  // bet is less then 30% over average  //TODO: adjust the weights
+      const maxWeight = selfDice.length / totalDiceNum; // 0.5;  // we "counted" around X% of dice needed   //TODO: adjust the weights
       console.log("- AI; bluff=" + bluff + ", real bet candidate: " + minValNum + " of " + maxVal + "'s" +
         ", maxValNum=" + maxValNum + ", avgNum=" + avgNum);    // #DEBUG
       if (maxVal > 1 && minValNum <= avgNum) {
@@ -770,8 +790,8 @@ export class GameBoardController extends AbstractGameBoardController {
       }
       else if (!lastBet   // can't dudo on a first round, bet something
         || (lastBet && lastBet.num <= selfLastBetNum) // can't dudo if we have all the last bet dice, bet something
-        || (maxVal > 1 && minValNum < totalDiceNum && (minValNum < avgNum * 1.3 && maxValNum > avgNum * 0.5))  //TODO: adjust the weights
-        || (maxVal === 1 && minValNum < totalDiceNum && (minValNum < avgNum / 2 * 1.3 && maxValNum > avgNum / 2 * 0.5))
+        || (maxVal > 1 && minValNum < totalDiceNum && (minValNum < avgNum * minWeight && maxValNum > avgNum * maxWeight))
+        || (maxVal === 1 && minValNum < totalDiceNum && (minValNum < avgNum / 2 * minWeight && maxValNum > avgNum / 2 * maxWeight))
       ) {
         return {
           num: minValNum,

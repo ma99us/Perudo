@@ -6,28 +6,31 @@
     <div class="card-body">
         <ul class="list-unstyled">
             <li class="col-12" ng-class="$index === $ctrl.gameData.playerTurn ? 'list-item list-group-item-info' : 'list-item'"
-                ng-repeat="p in $ctrl.playerService.players track by $index">
+                ng-repeat="p in $ctrl.buildPlayersUI() track by $index">
                 <div class="row">
                     <div class="col-4" style="height: 2em; vertical-align: middle;">
                         <lobby-player
-                                  mute="$ctrl.findPlayersData(p).diceNum === 0 && !p.spectator"
-                                  player="p" self="$ctrl.playerService.player"></lobby-player>
+                                  mute="p.diceNumUI === 0 && !p.playerUI.spectator"
+                                  player="p.playerUI" self="$ctrl.playerService.player"></lobby-player>
                     </div>
-                    <div class="col-1" ng-repeat="d in [].constructor(5) track by $index">
-                        <dice size="2" val="$ctrl.getDice(p, $parent.$index, $index)"></dice>
+                    <div class="col-1" ng-repeat="d in p.diceUI track by $index">
+                        <dice size="2" val="d"></dice>
                     </div>
-                    <div class="col-2 text-nowrap">
+                    <div class="col-2 text-nowrap" style="vertical-align: middle;">
+                        <p ng-show="p.stateUI !== 'ROLLING' && p.stateUI !== 'ROLLED' && $ctrl.gameData.gameState === 'ROLL'">
+                            <i class="fas fa-hourglass-end text-warning"></i>
+                        </p>
                         <p ng-show="($ctrl.gameData.gameState === 'ROLLED'
-                        || ($ctrl.gameData.gameState === 'REVEALED' && $index !== $ctrl.gameData.playerTurn))
-                        && $ctrl.findPlayersData(p).bet.num">
+                            || ($ctrl.gameData.gameState === 'REVEALED' && $index !== $ctrl.gameData.playerTurn))
+                            && p.betUI.num">
                             <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
-                                Bet: {{$ctrl.findPlayersData(p).bet.num}} of {{$ctrl.findPlayersData(p).bet.val}}'s
-                                <span ng-show="$ctrl.findPlayersData(p).bet.bot"> <i class="fas fa-robot"></i></span>
+                                Bet: {{p.betUI.num}} of {{p.betUI.val}}'s
+                                <span ng-show="p.betUI.bot"> <i class="fas fa-robot"></i></span>
                             </span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.playerTurn && $ctrl.gameData.gameState === 'REVEALED'">
-                            <strong class="text-warning glow-black" ng-show="$ctrl.findPlayersData(p).bet.dudo">DUDO!</strong>
-                            <span ng-show="$ctrl.findPlayersData(p).bet.bot"> <i class="fas fa-robot"></i></span>
+                            <strong class="text-warning glow-black" ng-show="p.betUI.dudo">DUDO!</strong>
+                            <span ng-show="p.betUI.bot"> <i class="fas fa-robot"></i></span>
                         </p>
                         <p ng-show="$index === $ctrl.gameData.lastLoserIndex && $ctrl.gameData.gameState === 'REVEALED'">
                             <strong class="text-danger glow-black">LOST!</strong>
@@ -77,11 +80,11 @@
                 </button>
                 <p ng-if="$ctrl.watchdogMB" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
             </div>
-            <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost">
-                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h5>
-                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h5>
-                <h5 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h5>
-                <h5 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry <i class="fas fa-ghost"></i></h5>
+            <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost" style="margin-top: 0px;">
+                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry <i class="fas fa-ghost"></i></h6>
                 <button ng-show="!$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
                     <i class="fas fa-step-forward"></i> Next Round
                 </button>

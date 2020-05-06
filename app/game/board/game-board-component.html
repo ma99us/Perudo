@@ -5,13 +5,14 @@
     </div>
     <div class="card-body">
         <ul class="list-unstyled">
-            <li class="col-12" ng-class="$index === $ctrl.gameData.playerTurn ? 'list-item list-group-item-info' : 'list-item'"
+            <li class="col-12"
+                ng-class="$index === $ctrl.gameData.playerTurn ? 'list-item list-group-item-info' : 'list-item'"
                 ng-repeat="p in $ctrl.buildPlayersUI() track by $index">
                 <div class="row">
                     <div class="col-4" style="height: 2em; vertical-align: middle;">
                         <lobby-player
-                                  mute="p.diceNumUI === 0 && !p.playerUI.spectator"
-                                  player="p.playerUI" self="$ctrl.playerService.player"></lobby-player>
+                                mute="p.diceNumUI === 0 && !p.playerUI.spectator"
+                                player="p.playerUI" self="$ctrl.playerService.player"></lobby-player>
                     </div>
                     <div class="col-1" ng-repeat="d in p.diceUI track by $index">
                         <dice size="2" val="d"></dice>
@@ -50,9 +51,11 @@
                 <button ng-click="$ctrl.rollDice()">
                     <i class="fas fa-dice"></i> Roll Dice
                 </button>
-                <p ng-if="$ctrl.watchdogRD" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
+                <p ng-if="$ctrl.watchdogRD" class="text-warning"><i class="fas fa-hourglass-half"></i>
+                    {{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
             </div>
-            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.playerData.state === 'TURN'" style="user-select: none;">
+            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.playerData.state === 'TURN'"
+                 style="user-select: none;">
                 <h4 ng-show="!$ctrl.isFirstTurn">
                     Last bet: {{$ctrl.findLastBet().num}} of {{$ctrl.findLastBet().val}}'s
                 </h4>
@@ -78,12 +81,15 @@
                 <button ng-click="$ctrl.askBotBet()">
                     <i class="fas fa-robot"></i> hint
                 </button>
-                <p ng-if="$ctrl.watchdogMB" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
+                <p ng-if="$ctrl.watchdogMB" class="text-warning"><i class="fas fa-hourglass-half"></i>
+                    {{$ctrl.watchdogBMts | date: 'mm:ss'}}</p>
             </div>
             <div ng-if="$ctrl.gameData.gameState === 'REVEALED' && $ctrl.isSelfJustLost" style="margin-top: 0px;">
                 <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 1">Better luck next time!</h6>
-                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again. Bummer!</h6>
-                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your game.</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek === 2">Oof! You lost again.
+                    Bummer!</h6>
+                <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your
+                    game.</h6>
                 <h6 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry <i class="fas fa-ghost"></i></h6>
                 <button ng-show="!$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
                     <i class="fas fa-step-forward"></i> Next Round
@@ -91,7 +97,8 @@
                 <button ng-show="$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
                     <i class="fas fa-clipboard-list"></i> Final Scores
                 </button>
-                <p ng-if="$ctrl.watchdogER" class="text-warning"><i class="fas fa-hourglass-half"></i> {{$ctrl.watchdogERts | date: 'mm:ss'}}</p>
+                <p ng-if="$ctrl.watchdogER" class="text-warning"><i class="fas fa-hourglass-half"></i>
+                    {{$ctrl.watchdogERts | date: 'mm:ss'}}</p>
             </div>
         </div>
     </div>
@@ -138,7 +145,8 @@
         </div>
         <div ng-if="$ctrl.playerService.player.name.indexOf('Red Dragon') >=0">
             <!-- FULL DEBUG! -->
-            <button class="btn btn-outline-warning btn-sm" type="button" data-toggle="collapse" data-target="#debug-console" aria-expanded="false" aria-controls="debug-console">
+            <button class="btn btn-outline-warning btn-sm" type="button" data-toggle="collapse"
+                    data-target="#debug-console" aria-expanded="false" aria-controls="debug-console">
                 *** DEBUG CONSOLE ***
             </button>
             <div id="debug-console" class="collapse bg-warning">

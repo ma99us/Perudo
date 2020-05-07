@@ -10,9 +10,12 @@
                 ng-repeat="p in $ctrl.buildPlayersUI() track by $index">
                 <div class="row">
                     <div class="col-4" style="height: 2em; vertical-align: middle;">
-                        <lobby-player
-                                mute="p.diceNumUI === 0 && !p.playerUI.spectator"
-                                player="p.playerUI" self="$ctrl.playerService.player"></lobby-player>
+                        <lobby-player mute="p.diceNumUI === 0 && !p.playerUI.spectator"
+                                player="p.playerUI" self="$ctrl.playerService.player">
+                        </lobby-player>
+                        <!--<i ng-show="($ctrl.gameData.gameState === 'ROLLED' && $index === $ctrl.gameData.playerTurn)-->
+                            <!--|| ($ctrl.gameData.gameState === 'REVEALED' && $index === $ctrl.gameData.lastLoserIndex)"-->
+                           <!--class="fas fa-hourglass-end text-warning"></i>-->
                     </div>
                     <div class="col-1" ng-repeat="d in p.diceUI track by $index">
                         <dice size="2" val="d"></dice>
@@ -21,21 +24,29 @@
                         <p ng-show="p.stateUI !== 'ROLLING' && p.stateUI !== 'ROLLED' && $ctrl.gameData.gameState === 'ROLL'">
                             <i class="fas fa-hourglass-end text-warning"></i>
                         </p>
-                        <p ng-show="($ctrl.gameData.gameState === 'ROLLED'
-                            || ($ctrl.gameData.gameState === 'REVEALED' && $index !== $ctrl.gameData.playerTurn))
-                            && p.betUI.num">
-                            <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
-                                Bet: {{p.betUI.num}} of {{p.betUI.val}}'s
+                        <snap ng-if="$ctrl.gameData.gameState === 'ROLLED'">
+                            <p ng-show="p.betUI.num">
+                                <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
+                                    Bet: {{p.betUI.num}} of {{p.betUI.val}}'s
+                                    <span ng-show="p.betUI.bot"> <i class="fas fa-robot"></i></span>
+                                </span>
+                            </p>
+                        </snap>
+                        <snap ng-if="$ctrl.gameData.gameState === 'REVEALED'">
+                            <p ng-show="$index !== $ctrl.gameData.playerTurn && p.betUI.num">
+                                <span ng-class="$ctrl.isLastBetPlayerIndex($index) ? 'strong' : ''">
+                                    Bet: {{p.betUI.num}} of {{p.betUI.val}}'s
+                                    <span ng-show="p.betUI.bot"> <i class="fas fa-robot"></i></span>
+                                </span>
+                            </p>
+                            <p ng-show="$index === $ctrl.gameData.playerTurn">
+                                <strong class="text-warning glow-black" ng-show="p.betUI.dudo">DUDO!</strong>
                                 <span ng-show="p.betUI.bot"> <i class="fas fa-robot"></i></span>
-                            </span>
-                        </p>
-                        <p ng-show="$index === $ctrl.gameData.playerTurn && $ctrl.gameData.gameState === 'REVEALED'">
-                            <strong class="text-warning glow-black" ng-show="p.betUI.dudo">DUDO!</strong>
-                            <span ng-show="p.betUI.bot"> <i class="fas fa-robot"></i></span>
-                        </p>
-                        <p ng-show="$index === $ctrl.gameData.lastLoserIndex && $ctrl.gameData.gameState === 'REVEALED'">
-                            <strong class="text-danger glow-black">LOST!</strong>
-                        </p>
+                            </p>
+                            <p ng-show="$index === $ctrl.gameData.lastLoserIndex">
+                                <strong class="text-danger glow-black">LOST!</strong>
+                            </p>
+                        </snap>
                     </div>
                 </div>
             </li>

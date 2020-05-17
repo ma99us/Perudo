@@ -56,9 +56,6 @@ export class GameController {
         this.playerService.onSessionClosed(data.sessionId);
       }
     });
-    // this.mbsMessagesListener = this.messageBusService.on("session-message", (event, data) => {
-    //   console.log("session-message: " + data);
-    // });
     this.mbsMessagesListener = this.messageBusService.on("http-event", (event, data) => {
       //console.log("http-event: " + data);
       this.alertService.warning(data.message);
@@ -70,21 +67,21 @@ export class GameController {
   }
 
   $onDestroy() {
-    this.hostStorageService.disconnect();
-
     if (this.mbsDbListener) {
       this.mbsDbListener();
     }
     if (this.mbsEventsListener) {
       this.mbsEventsListener();
     }
-    // if(this.mbsMessagesListener){
-    //   this.mbsMessagesListener();
-    // }
+    if(this.mbsMessagesListener){
+      this.mbsMessagesListener();
+    }
 
     this.unregisterLobby();
     this.gameBotService.removeBotPlayer();
     this.playerService.unloadPlayer();
+
+    this.hostStorageService.disconnect();
   }
 
   onOpened() {
@@ -97,9 +94,10 @@ export class GameController {
         return this.getPlayers();
       })
       .then(() => {
-        if (!this.playerService.player.inLobby && this.state && this.state !== 'LOBBY') {
+        if (this.playerService.player.spectator == null &&
+          (!this.playerService.player.inLobby && this.state && this.state !== 'LOBBY')) {
           this.playerService.player.spectator = true;
-        } else {
+        } else if (this.playerService.player.spectator == null) {
           this.playerService.player.spectator = false;
         }
         this.playerService.player.sessionId = this.hostStorageService.sessionId;
@@ -203,7 +201,7 @@ export class GameController {
   }
 
   registerLobby() {
-    if (!this.playerService.player.isHost || this.state || this.lobbyService.lobby) {
+    if (!this.playerService.isHost || this.state || this.lobbyService.lobby) {
       return;
     }
     this.lobbyService.lobby = {
@@ -214,7 +212,7 @@ export class GameController {
       state: this.state,
       lastStateUpdate: this.lastStateUpdate
     };
-    return this.lobbyService.updateLobby()
+    return this.lobbyService.addLobby()
       .then(data => {
         return this.updateState('LOBBY');
       })
@@ -228,11 +226,13 @@ export class GameController {
   }
 
   updateLobby() {
-    if (!this.playerService.player.isHost) {
+    if (!this.playerService.isHost) {
       return;
     }
-    this.lobbyService.lobby.playersNum = this.playerService.players.length;
-    this.lobbyService.lobby.host = this.playerService.player.name;
+    if (this.state === 'LOBBY') {
+      this.lobbyService.lobby.playersNum = this.playerService.players.length;
+      this.lobbyService.lobby.host = this.playerService.player.name;
+    }
     this.lobbyService.lobby.state = this.state;
     this.lobbyService.lobby.lastStateUpdate = this.lastStateUpdate;
     return this.lobbyService.updateLobby();
@@ -298,5 +298,11 @@ export class GameController {
 
   get isSoundMute() {
     return this.isSoundMuted;
+  }
+
+  /* DEBUG ONLY! */
+
+  get isSuperPlayer() {
+    return this.playerService.player && this.playerService.player.name.indexOf('Red Dragon') >= 0;
   }
 }

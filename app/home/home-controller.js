@@ -111,6 +111,12 @@ export class HomeController {
       })
   }
 
+  /* DEBUG ONLY! */
+
+  get isSuperPlayer() {
+    return this.player.name.indexOf('Red Dragon') >= 0;
+  }
+
   debugDeleteAllLobbies() {
     return this.hostStorageService.delete("lobbies")
       .then(() => {

@@ -21,7 +21,7 @@
                         <dice size="2" val="d"></dice>
                     </div>
                     <div class="col-2 text-nowrap" style="vertical-align: middle;">
-                        <p ng-show="p.stateUI !== 'ROLLING' && p.stateUI !== 'ROLLED' && $ctrl.gameData.gameState === 'ROLL'">
+                        <p ng-show="p.diceNumUI > 0 && p.stateUI !== 'ROLLING' && p.stateUI !== 'ROLLED' && $ctrl.gameData.gameState === 'ROLL'">
                             <i class="fas fa-hourglass-end text-warning"></i>
                         </p>
                         <snap ng-if="$ctrl.gameData.gameState === 'ROLLED'">
@@ -65,7 +65,7 @@
                 <p ng-if="$ctrl.watchdogRD" class="text-warning"><i class="fas fa-hourglass-half"></i>
                     {{$ctrl.watchdogRDts | date: 'mm:ss'}}</p>
             </div>
-            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.playerData.state === 'TURN'"
+            <div ng-if="$ctrl.gameData.gameState === 'ROLLED' && $ctrl.isSelfTurn && $ctrl.playerData.state === 'TURN'"
                  style="user-select: none;">
                 <h4 ng-show="!$ctrl.isFirstTurn">
                     Last bet: {{$ctrl.findLastBet().num}} of {{$ctrl.findLastBet().val}}'s
@@ -102,10 +102,10 @@
                 <h6 ng-show="$ctrl.playerData.diceNum > 0 && $ctrl.lastLooserStreek > 2">Ahh! Maybe this is not your
                     game.</h6>
                 <h6 ng-show="$ctrl.playerData.diceNum === 0">You are out. Sorry <i class="fas fa-ghost"></i></h6>
-                <button ng-show="!$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
+                <button ng-show="!$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRoundClick()">
                     <i class="fas fa-step-forward"></i> Next Round
                 </button>
-                <button ng-show="$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRound()">
+                <button ng-show="$ctrl.checkForWinnerPlayer()" ng-click="$ctrl.endRoundClick()">
                     <i class="fas fa-clipboard-list"></i> Final Scores
                 </button>
                 <p ng-if="$ctrl.watchdogER" class="text-warning"><i class="fas fa-hourglass-half"></i>
@@ -117,8 +117,12 @@
         <div class="row">
             <div class="div-thin text-left col-4">
                 <button ng-show="$ctrl.playerService.isSpectator"
-                        ng-click="$ctrl.removeGamePlayer($ctrl.playerService.player)">
+                        ng-click="$ctrl.leaveGame()">
                     <i class="fas fa-user-slash"></i> Leave Game
+                </button>
+                <button class="btn btn-info btn-sm" type="button" data-toggle="collapse"
+                        data-target="#howto-play" aria-expanded="false" aria-controls="howto-play">
+                    How To play
                 </button>
                 <!-- MINIMAL DEBUG! -->
                 <button class="btn btn-outline-warning btn-sm" ng-click="$ctrl.debugDumpAllGameData()">
@@ -154,7 +158,26 @@
             </span>
             </div>
         </div>
-        <div ng-if="$ctrl.playerService.player.name.indexOf('Red Dragon') >=0">
+        <div id="howto-play" class="collapse bg-info text-white">
+            <h5>Perudo Rules</h5>
+
+            <p><b>Perudo</b> is a dice game. The object of perudo is to be the last player with a die or more.</p>
+
+            <p>Perudo is played in rounds. Each player receives a five dice. Each round begins by all players rolling their dice privately.</p>
+
+            <p>Players bid in turns, guessing at the total number of dice values rolled. When a player believes that previous player has over-estimated, they say Dudo, which means I doubt in Spanish.</p>
+
+            <p>The first player announces a number, and then the next player has the choice of doubting it, by saying Dudo or raising the bid, either by the number of dice or by the value of the dice. (or by doing both) For example, if player 1 bid three twos, then player two could bid three threes, four twos, four fours, or even ten sixes. After player bids, play goes on to the next player.</p>
+
+            <p>If a player calls Dudo, and is correct, then the player must show the dice, and each player must show their dice to verify whether the number was indeed too high.</p>
+
+            <p>If there are enough dice of that number, then the player who called Dudo must lose a dice. If there are not, then the player who made the last bid must lose a dice. In either case, a new round begins.</p>
+
+            <p>The player who lost a die in the last round is the first player in the new round. If the player lost his last die, then he is out of the game, and the next player plays first instead. Players may bid Aces (ones) in a round, and halve the previous number announced. If the number does not halve, they should round up. The next player will need to bid more aces or to bid one more than double the number bid in order to bid a different number.</p>
+
+            <p>The last player left with at least one die wins the game.</p>
+        </div>
+        <div ng-if="$ctrl.game.isSuperPlayer">
             <!-- FULL DEBUG! -->
             <button class="btn btn-outline-warning btn-sm" type="button" data-toggle="collapse"
                     data-target="#debug-console" aria-expanded="false" aria-controls="debug-console">

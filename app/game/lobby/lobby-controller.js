@@ -40,6 +40,10 @@ export class LobbyController {
   }
 
   startGame(){
+    if(this.playerService.players.length < 2){
+      this.alertService.warning("Invite more players or add BOTs to start the game");
+      return;
+    }
     this.game.updateState('GAME');
   }
 

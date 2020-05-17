@@ -31,13 +31,15 @@
                             </div>
                             <div class="col-sm-4">-
                                 <span ng-show="!l.state">...</span>
-                                <button ng-show="l.state === 'LOBBY'" ng-click="$ctrl.joinLobby(l.id)">Join</button>
+                                <span ng-show="l.state === 'LOBBY'">open lobby
+                                    <button ng-click="$ctrl.joinLobby(l.id)"><i class="fas fa-sign-in-alt"></i> Join</button>
+                                </span>
                                 <span ng-show="l.state === 'GAME'">in game
                                     <button ng-click="$ctrl.joinLobby(l.id)"><i class="far fa-eye"></i> Spectate</button>
                                 </span>
                                 <span ng-show="l.state === 'FINISHED'">finished
-                                    <!--<button ng-show="$ctrl.player.name === l.host" ng-click="$ctrl.deleteLobby(l.id)">X</button>-->
                                     <button ng-click="$ctrl.joinLobby(l.id)"><i class="fas fa-clipboard-list"></i> View Score</button>
+                                    <button ng-if="$ctrl.isSuperPlayer" ng-click="$ctrl.deleteLobby(l.id)">X</button>
                                 </span>
                             </div>
                         </div>
@@ -46,7 +48,7 @@
             </div>
         </div>
         <div class="card-footer text-center">
-            <div ng-if="$ctrl.player.name.indexOf('Red Dragon') >=0" class="bg-warning">
+            <div ng-if="$ctrl.isSuperPlayer" class="bg-warning">
                 <h6>*** DEBUG CONSOLE ***</h6>
                 <p>Player: "{{$ctrl.player.name}}", id: {{$ctrl.player.id}}</p>
                 <button ng-click="$ctrl.debugDeleteAllLobbies()">

@@ -34,6 +34,19 @@ export class LobbyService {
       });
   }
 
+  addLobby() {
+    if (!this.lobby) {
+      return;
+    }
+    return this.hostStorageService.add("lobbies", this.lobby, 0, this.API.HOST_DB_NAME)   // use home db
+      .then(() => {
+        this.alertService.message();
+      })
+      .catch(err => {
+        this.alertService.error(err);
+      });
+  }
+
   updateLobby() {
     if (!this.lobby) {
       return;

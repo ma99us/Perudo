@@ -165,10 +165,10 @@ export class AbstractGameBoardController {
     return this.hostStorageService.get("gameData").then(data => {
       this.gameData = data;
       //console.log("* syncGameData; gameData{} replaced");   // #DEBUG
-      if (!this.gameData) {
+      if (!this.gameData && initGameData) {
         this.gameData = initGameData;
         if (this.isHost) {
-          return this.updateGameData(this.gameData);
+          return this.updateGameData();
         }
       }
     }).catch(err => {
@@ -177,9 +177,10 @@ export class AbstractGameBoardController {
     })
   }
 
-  updateGameData() {
-    console.log(`++ updating DB "gameData": ${JSON.stringify(this.gameData)}`);  // #DEBUG
-    return this.hostStorageService.set("gameData", this.gameData).catch(err => {
+  updateGameData(gameDate) {
+    gameDate = gameDate || this.gameData;
+    console.log(`++ updating DB "gameData": ${JSON.stringify(gameDate)}`);  // #DEBUG
+    return this.hostStorageService.set("gameData", gameDate).catch(err => {
       this.alertService.error(err);
       throw err;
     })
@@ -227,6 +228,10 @@ export class AbstractGameBoardController {
    */
   makePublicPlayerData() {
     return Object.assign({}, this.playerData);
+  }
+
+  makePublicGameData() {
+    return Object.assign({}, this.gameData);
   }
 
   findPlayersData(player) {

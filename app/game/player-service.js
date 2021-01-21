@@ -79,6 +79,7 @@ export class PlayerService {
         this.player.isHost = selfPlayer.isHost != null ? selfPlayer.isHost : this.player.isHost;
         this.player.spectator = selfPlayer.spectator != null ? selfPlayer.spectator : this.player.spectator;
         this.player.bot = selfPlayer.bot != null ? selfPlayer.bot : this.player.bot;
+        this.player.inLobby = selfPlayer.inLobby != null ? selfPlayer.inLobby : this.player.inLobby;
       }
     }).catch(err => {
       this.alertService.error(err);

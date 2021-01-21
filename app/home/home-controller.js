@@ -114,7 +114,7 @@ export class HomeController {
   /* DEBUG ONLY! */
 
   get isSuperPlayer() {
-    return this.player.name.indexOf('Red Dragon') >= 0;
+    return this.player && this.player.name && this.player.name.indexOf('Red Dragon') >= 0;
   }
 
   debugDeleteAllLobbies() {

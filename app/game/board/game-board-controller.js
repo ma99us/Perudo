@@ -489,10 +489,11 @@ export class GameBoardController extends AbstractGameBoardController {
         throw "loseDice; bad next player turn; null; wasTurn=" + this.gameData.playerTurn + ". This should not happen!";  // #DEBUG
       }
     }
+    const gameData = this.makePublicGameData();
 
     return this.updatePlayersData(this.makePublicPlayerData(false))
       .then(() => {
-        return this.updateGameData();
+        return this.updateGameData(gameData);
       })
       .finally(() => {
         this.atomicUpdate = false;
@@ -581,10 +582,11 @@ export class GameBoardController extends AbstractGameBoardController {
       throw "makeBet; bad next player turn; null; wasTurn=" + wasTurn + ". This should not happen!";  // #DEBUG
     }
     this.gameData.lastRoundLength++;
+    const gameData = this.makePublicGameData();
 
     return this.updatePlayersData(this.makePublicPlayerData())
       .then(() => {
-        return this.updateGameData();
+        return this.updateGameData(gameData);
       })
       .finally(() => {
         this.watchdogBMts = null;
@@ -627,10 +629,11 @@ export class GameBoardController extends AbstractGameBoardController {
     this.playerData.state = GameState.ROLLED; // our turn is done
 
     this.gameData.gameState = GameState.REVEAL;
+    const gameData = this.makePublicGameData();
 
     return this.updatePlayersData(this.makePublicPlayerData())
       .then(() => {
-        return this.updateGameData();
+        return this.updateGameData(gameData);
       })
       .finally(() => {
         this.watchdogBMts = null;

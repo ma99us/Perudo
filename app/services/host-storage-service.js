@@ -353,10 +353,16 @@ export class HostStorageService {
       return deferred.promise;
     }
 
+    // always send a 'body' with DELETE, to not freak out the Mike-DB server CORS filter
+    const value = {};
+    if (id != null) {
+      value.id = id;
+    }
+
     const self = this;
     let retry = 0;
     let request = function () {
-      self.$http.delete(url + key, {params: {id: id, index: index}})
+      self.$http.delete(url + key, {params: {id: id, index: index}, data: value, headers: HostStorageService.prepareHeaders(value)})
         .then(response => {
           HostStorageService.validateResponse(deferred, response);
         }, err => {
